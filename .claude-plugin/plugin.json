@@ -1,0 +1,9 @@
+{
+  "name": "diy-cake",
+  "version": "0.0.1",
+  "description": "A plugin to clone packages from SDKs you don't quite trust",
+  "author": {
+    "name": "ob1",
+    "email": "b@ob1.info"
+  }
+}
