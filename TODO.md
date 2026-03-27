@@ -5,3 +5,5 @@ Diy-loop
 * After generation of single task/phase, run evaluator’s test and if it fails, we inject context to edit files to pass the test (without hacking)
 * Pass criteria is when all tasks and tests pass
     * add more complex quality gates later, assume passing tests written by evaluator agent works
+* UX: maybe after the /diy-loop command, it should launch in a sandbox and notify user to merge the PR
+* spin up subagent to complete TODO item and update progress.txt or check off TODO item, send back progress to main agent with structured report defined by us
