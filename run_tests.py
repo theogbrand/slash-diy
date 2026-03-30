@@ -24,29 +24,35 @@ def find_test_dir():
 def main():
     test_dir = find_test_dir()
     result = subprocess.run(
-        [sys.executable, "-m", "pytest", test_dir, "-v", "--tb=short", "-q"],
+        [sys.executable, "-m", "pytest", test_dir, "-v", "--tb=short"],
         capture_output=True,
         text=True,
         timeout=300,
     )
 
+    output = result.stdout + result.stderr
     print(result.stdout)
     if result.stderr:
         print(result.stderr)
 
-    # Parse pytest summary line for pass/fail counts
+    # Count individual test results from verbose output lines
+    # Format: "path/test_file.py::test_name PASSED" / "FAILED" / "ERROR"
     passed = failed = errors = 0
-    for line in (result.stdout + result.stderr).splitlines():
-        if any(w in line for w in ["passed", "failed", "error"]):
-            m = re.search(r"(\d+) passed", line)
-            if m:
-                passed = int(m.group(1))
-            m = re.search(r"(\d+) failed", line)
-            if m:
-                failed = int(m.group(1))
-            m = re.search(r"(\d+) error", line)
-            if m:
-                errors = int(m.group(1))
+    for line in output.splitlines():
+        stripped = line.strip()
+        if stripped.endswith(" PASSED"):
+            passed += 1
+        elif stripped.endswith(" FAILED"):
+            failed += 1
+        elif stripped.endswith(" ERROR"):
+            errors += 1
+
+    # Also count collection errors (files that couldn't even be imported)
+    # These show as "ERROR path/file.py" in the summary section
+    collection_errors = 0
+    m = re.search(r"(\d+) error", output)
+    if m:
+        collection_errors = int(m.group(1)) - errors
 
     total = passed + failed + errors
     score = passed / total if total > 0 else 0.0
@@ -57,6 +63,8 @@ def main():
     print(f"failed:         {failed}")
     print(f"errors:         {errors}")
     print(f"total:          {total}")
+    if collection_errors > 0:
+        print(f"collection_errors: {collection_errors} (files that failed to import)")
 
 
 if __name__ == "__main__":
