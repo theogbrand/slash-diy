@@ -13,3 +13,4 @@ Diy-loop
 
 Beyond writing a naive AI-written test and running the original SDK with the user specified functionality, can we do better
     - becuase if this is not well written, the quality of everything else downstream will depend on this definition of correctness
+    - go search original library for relevant tests, if not write an AI test, or give user ability to write their acceptance criteria
