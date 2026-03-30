@@ -11,7 +11,7 @@ import subprocess
 from pathlib import Path
 
 CLONE_DIR = Path(".clone")
-REFERENCE_DIR = Path("reference")
+REFERENCE_DIR = Path(".slash_diy/reference")
 
 
 def clone_repo(url: str) -> Path:
@@ -56,7 +56,7 @@ def copy_reference(repo_dir: Path, package_name: str):
     dest = REFERENCE_DIR / package_name
     if dest.exists():
         shutil.rmtree(dest)
-    REFERENCE_DIR.mkdir(exist_ok=True)
+    REFERENCE_DIR.mkdir(parents=True, exist_ok=True)
     src = repo_dir / package_name
     if src.exists():
         shutil.copytree(src, dest)

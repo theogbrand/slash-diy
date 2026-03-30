@@ -166,17 +166,25 @@ if [[ -n "$REPO_URL" ]]; then
 
   echo ""
   echo "━━━ Step 2/5: Scaffolding project root ━━━"
-  for f in library.py pyproject.toml; do
-    if [[ ! -f "$f" ]]; then
-      cp "$LOCAL_PLUGIN_DIR/$f" .
-      echo "  → ./$f (created)"
-    else
-      echo "  → ./$f (already exists, skipped)"
-    fi
-  done
+  if [[ ! -f "pyproject.toml" ]]; then
+    cp "$LOCAL_PLUGIN_DIR/pyproject.toml" .
+    echo "  → ./pyproject.toml (created)"
+  else
+    echo "  → ./pyproject.toml (already exists, skipped)"
+  fi
+  # Create diy_<package>/ as a Python package so submodule imports work
+  DIY_PKG="diy_${PACKAGE_NAME//-/_}"
+  if [[ ! -d "$DIY_PKG" ]]; then
+    mkdir -p "$DIY_PKG/tests/generated" "$DIY_PKG/tests/discovered"
+    cp "$LOCAL_PLUGIN_DIR/library.py" "$DIY_PKG/__init__.py"
+    echo "  → ./$DIY_PKG/__init__.py (created as package)"
+    echo "  → ./$DIY_PKG/tests/{generated,discovered}/ (created)"
+  else
+    echo "  → ./$DIY_PKG/ (already exists, skipped)"
+  fi
 
   echo ""
-  echo "━━━ Step 3/5: Cloning repo & copying reference ━━━"
+  echo "━━━ Step 3/5: Cloning repo & copying reference to .slash_diy/ ━━━"
   echo "  URL: $REPO_URL"
   uv run "$LOCAL_PLUGIN_DIR/prepare.py" --url "$REPO_URL"
   if [[ $? -ne 0 ]]; then

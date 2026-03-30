@@ -1,7 +1,7 @@
 """
-Run the extracted test suite against library.py and compute score.
+Run the extracted test suite against diy_<package>/ and compute score.
 
-Analogous to backtest.py in auto-researchtrading.
+Auto-detects the test directory by looking for diy_*/tests/.
 
 Usage:
     uv run run_tests.py > run.log 2>&1
@@ -11,11 +11,20 @@ Usage:
 import re
 import subprocess
 import sys
+from pathlib import Path
+
+
+def find_test_dir():
+    for d in sorted(Path(".").glob("diy_*/tests")):
+        if d.is_dir():
+            return str(d)
+    return "tests"
 
 
 def main():
+    test_dir = find_test_dir()
     result = subprocess.run(
-        [sys.executable, "-m", "pytest", "tests/", "-v", "--tb=short", "-q"],
+        [sys.executable, "-m", "pytest", test_dir, "-v", "--tb=short", "-q"],
         capture_output=True,
         text=True,
         timeout=300,

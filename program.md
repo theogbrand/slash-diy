@@ -3,21 +3,28 @@
 ## Goal
 
 Curate a focused test suite for the target function, validate it against the
-real library, then iteratively build `library.py` to pass those tests.
-You ONLY modify `library.py`. Everything else is fixed.
+real library, then iteratively build `diy_<package>/` to pass those tests.
+You ONLY modify files within `diy_<package>/`. Everything else is fixed.
+
+> **Naming convention**: The working directory is `diy_<package>/` where
+> `<package>` is the Package name from your prompt with hyphens replaced by
+> underscores (e.g., package `litellm` → `diy_litellm/`).
 
 ## Directory Structure
 
 ```
 ./                                    # Target project root (your CWD)
-├── library.py                        # ONLY file you edit
+├── diy_<package>/                    # ONLY directory you edit (Python package)
+│   ├── __init__.py                   # Main module — add submodules as needed
+│   ├── *.py                          # Create submodules to match target structure
+│   └── tests/                        # Curated test suite (created in Phase 0)
+│       ├── generated/                # Tests you write via subagent
+│       └── discovered/               # Tests found in original repo via subagent
 ├── pyproject.toml                    # Project deps
-├── tests/                            # Curated test suite (created in Phase 0)
-│   ├── generated/                    # Tests you write via subagent
-│   └── discovered/                   # Tests found in original repo via subagent
-├── reference/                        # Read-only reference material
-│   ├── <package>/                    # Original source code
-│   └── tests/                        # Original test suite (raw, unmodified)
+├── .slash_diy/                       # Hidden dir for reference material
+│   └── reference/                    # Read-only reference material
+│       ├── <package>/                # Original source code
+│       └── tests/                    # Original test suite (raw, unmodified)
 ├── results.tsv                       # Experiment log (untracked)
 ├── run.log                           # Latest test output (untracked)
 └── .claude/plugins/slash-diy/        # Plugin tools (DO NOT MODIFY)
@@ -29,7 +36,7 @@ You ONLY modify `library.py`. Everything else is fixed.
 
 ## Phase 0: Test Curation
 
-**You MUST complete this phase before touching library.py.**
+**You MUST complete this phase before touching diy_<package>/.**
 
 Parse your prompt to identify:
 - **Package name**: from the `Package:` line in the prompt
@@ -44,12 +51,12 @@ You are an experienced Test Engineer writing pytest unit tests.
 
 Target: <FUNCTION from Task line> from the <PACKAGE> library.
 
-Study the reference implementation in reference/<PACKAGE>/ to understand:
+Study the reference implementation in .slash_diy/reference/<PACKAGE>/ to understand:
 - Function signature, parameters, and return types
 - Error handling and edge cases
 - Common usage patterns
 
-Write comprehensive pytest tests to tests/generated/test_<function>.py covering:
+Write comprehensive pytest tests to diy_<PACKAGE>/tests/generated/test_<function>.py covering:
 - Happy path with typical inputs
 - Edge cases (empty inputs, None, boundary conditions)
 - Error handling (invalid inputs, expected exceptions)
@@ -61,7 +68,7 @@ Rules:
 - Use unittest.mock to mock any external dependencies (HTTP, databases, etc.)
 - Each test must be independent and clearly named
 - Target 10-30 focused tests
-- Create tests/generated/ directory if it doesn't exist
+- Create diy_<PACKAGE>/tests/generated/ directory if it doesn't exist
 ```
 
 ### Step 2: Discover relevant tests (Subagent B)
@@ -69,22 +76,23 @@ Rules:
 Use the Agent tool to spawn a subagent with this task:
 
 ```
-You are a test curator. Search reference/tests/ to find tests relevant to:
+You are a test curator. Search .slash_diy/reference/tests/ to find tests relevant to:
 <FUNCTION from Task line> from <PACKAGE>.
 
 Strategy:
 1. Glob for test file names containing the function name
 2. Grep for imports/calls of the target function across all test files
 3. Read candidate files to confirm relevance
-4. Copy ONLY relevant files to tests/discovered/ (preserve directory structure)
+4. Copy ONLY relevant files to diy_<PACKAGE>/tests/discovered/ (preserve directory structure)
 
 Rules:
 - Do NOT rewrite imports — keep them importing from the real library
 - Skip tests that require API keys, network access, or complex fixtures
 - Skip tests for unrelated features
 - If only part of a file is relevant, extract just those test functions
+- IMPORTANT: Prefix ALL discovered test filenames with `disc_` (e.g., `test_foo.py` → `disc_test_foo.py`) to avoid name collisions with generated tests
 - Cap at ~10-15 most relevant test files
-- Create tests/discovered/ directory if it doesn't exist
+- Create diy_<PACKAGE>/tests/discovered/ directory if it doesn't exist
 - If no relevant tests found, that's OK — generated tests are sufficient
 ```
 
@@ -95,7 +103,7 @@ Rules:
 Run the curated tests against the pip-installed real library:
 
 ```bash
-uv run pytest tests/generated/ tests/discovered/ -v --tb=short 2>&1
+uv run pytest diy_<PACKAGE>/tests/generated/ diy_<PACKAGE>/tests/discovered/ -v --tb=short 2>&1
 ```
 
 **Prune failures:**
@@ -115,7 +123,7 @@ Test validation results:
 
 ### Step 4: Rewrite imports
 
-After validation passes, rewrite imports so tests target `library.py`:
+After validation passes, rewrite imports so tests target `diy_<package>/`:
 
 ```bash
 uv run .claude/plugins/slash-diy/rewrite_imports.py --package <PACKAGE>
@@ -123,14 +131,14 @@ uv run .claude/plugins/slash-diy/rewrite_imports.py --package <PACKAGE>
 
 ### Step 5: Sanity check
 
-Run the test suite against the empty `library.py` to confirm tests fail:
+Run the test suite against the empty `diy_<package>/` to confirm tests fail:
 
 ```bash
 uv run .claude/plugins/slash-diy/run_tests.py > run.log 2>&1
 grep "^score:" run.log
 ```
 
-Score should be ~0.0 (tests should fail against empty library.py). If score > 0,
+Score should be ~0.0 (tests should fail against empty diy_<package>/). If score > 0,
 something is wrong — investigate before proceeding.
 
 ---
@@ -154,8 +162,9 @@ something is wrong — investigate before proceeding.
 
 ## Constraints
 
-- **ONLY edit `library.py`** — never modify `tests/`, `.claude/plugins/`, or `reference/`
-- Study `reference/` for the original implementation — it's your primary resource
+- **ONLY edit files within `diy_<package>/`** — never modify `.slash_diy/`, `.claude/plugins/`, or test files after Phase 0
+- `diy_<package>/` is a Python package — add submodules (e.g., `diy_<package>/utils.py`) as needed to match the target library's structure
+- Study `.slash_diy/reference/` for the original implementation — it's your primary resource
 - 300-second timeout per test run
 - Cannot install new packages beyond what's in `pyproject.toml`
 
@@ -163,11 +172,11 @@ something is wrong — investigate before proceeding.
 
 ```
 FOREVER:
-1. Read current library.py and results.tsv
-2. Study failing tests: uv run pytest tests/ -x --tb=short 2>&1
+1. Read current diy_<package>/ source files and results.tsv
+2. Study failing tests: uv run pytest diy_<package>/tests/ -x --tb=short 2>&1
 3. Identify the next group of tests to fix
-4. Modify library.py to pass more tests
-5. git add library.py && git commit -m "expN: description"
+4. Modify source files in diy_<package>/ to pass more tests
+5. git add diy_<package>/ && git commit -m "expN: description"
 6. uv run .claude/plugins/slash-diy/run_tests.py > run.log 2>&1
 7. grep "^score:\|^passed:\|^failed:" run.log
 8. If score IMPROVED → keep commit, record in results.tsv
@@ -179,7 +188,8 @@ FOREVER:
 
 ### Phase 1: Stubs & Imports
 - Read test files to understand what's imported from the library
-- Create stub functions/classes that satisfy import requirements
+- Create stub functions/classes in `diy_<package>/__init__.py` (and submodules as needed) that satisfy import requirements
+- Mirror the target library's module structure: if tests import `from diy_<package>.foo import X`, create `diy_<package>/foo.py`
 - Goal: move from ImportError to actual test failures
 
 ### Phase 2: Core Functionality
@@ -201,8 +211,8 @@ echo -e "$(git rev-parse --short HEAD)\t${score}\t${passed}\t${failed}\t${total}
 
 ## Tips
 
-- Run `uv run pytest tests/ -x --tb=short` to stop at first failure — fix one thing at a time
+- Run `uv run pytest diy_<package>/tests/ -x --tb=short` to stop at first failure — fix one thing at a time
 - Read the failing test carefully before looking at the reference implementation
 - Many tests share underlying functions — fixing one often fixes many
-- Keep library.py organized: group related functionality together
+- Keep diy_<package>/ organized: one submodule per logical area, re-export from __init__.py
 - The recursive decomposition philosophy applies: start high-level, decompose layer by layer
