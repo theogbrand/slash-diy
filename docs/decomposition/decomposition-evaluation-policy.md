@@ -1,8 +1,10 @@
 # Dependency Evaluation Policy
 
-This policy evaluates a single dependency in isolation to decide whether to keep it or replace it with a lower-level implementation. Use this in **step 3** of the [Recursive Dependency Decomposition Workflow](recursive_decomposition.md): "evaluate whether to decompose further."
+**Purpose:** Evaluate a single dependency in isolation to decide whether to keep it or replace it with a lower-level implementation.
 
-The policy is language-agnostic and focused on preventing unnecessary coupling and surface area.
+**How to use:** When you need to decide if a dependency should be decomposed, consult this policy. Answer the questions in the evaluation framework or check if your dependency matches a "replace by default" category.
+
+**Scope:** Language-agnostic. Focused on preventing unnecessary coupling and reducing surface area.
 
 ---
 
