@@ -9,6 +9,7 @@ set -euo pipefail
 PROMPT_PARTS=()
 MAX_ITERATIONS=0
 COMPLETION_PROMISE="null"
+REPO_URL=""
 
 # Parse options and positional arguments
 while [[ $# -gt 0 ]]; do
@@ -84,6 +85,14 @@ HELP_EOF
       MAX_ITERATIONS="$2"
       shift 2
       ;;
+    --url)
+      if [[ -z "${2:-}" ]]; then
+        echo "❌ Error: --url requires a GitHub repo URL" >&2
+        exit 1
+      fi
+      REPO_URL="$2"
+      shift 2
+      ;;
     --completion-promise)
       if [[ -z "${2:-}" ]]; then
         echo "❌ Error: --completion-promise requires a text argument" >&2
@@ -125,6 +134,57 @@ if [[ -z "$PROMPT" ]]; then
   echo "" >&2
   echo "   For all options: /ralph-loop --help" >&2
   exit 1
+fi
+
+# If --url provided, scaffold the target repo and run prepare.py
+if [[ -n "$REPO_URL" ]]; then
+  PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
+  LOCAL_PLUGIN_DIR=".claude/plugins/slash-diy"
+
+  echo ""
+  echo "━━━ Step 1/4: Copying plugin files ━━━"
+  mkdir -p "$LOCAL_PLUGIN_DIR"
+  for f in prepare.py run_tests.py library.py program.md pyproject.toml; do
+    cp "$PLUGIN_ROOT/$f" "$LOCAL_PLUGIN_DIR/"
+    echo "  → $LOCAL_PLUGIN_DIR/$f"
+  done
+
+  echo ""
+  echo "━━━ Step 2/4: Scaffolding project root ━━━"
+  for f in library.py pyproject.toml; do
+    if [[ ! -f "$f" ]]; then
+      cp "$LOCAL_PLUGIN_DIR/$f" .
+      echo "  → ./$f (created)"
+    else
+      echo "  → ./$f (already exists, skipped)"
+    fi
+  done
+
+  echo ""
+  echo "━━━ Step 3/4: Cloning repo & extracting tests ━━━"
+  echo "  URL: $REPO_URL"
+  uv run "$LOCAL_PLUGIN_DIR/prepare.py" --url "$REPO_URL"
+  if [[ $? -ne 0 ]]; then
+    echo "❌ prepare.py failed" >&2
+    exit 1
+  fi
+
+  echo ""
+  echo "━━━ Step 4/4: Configuring loop ━━━"
+
+  # Default completion promise when using --url
+  if [[ "$COMPLETION_PROMISE" == "null" ]]; then
+    COMPLETION_PROMISE="ALL TESTS PASSING"
+    echo "  Completion promise defaulted to: $COMPLETION_PROMISE"
+  fi
+
+  # Compose the full prompt: user's task + program.md reference
+  PROMPT="Follow the instructions in .claude/plugins/slash-diy/program.md.
+
+Task: $PROMPT
+Repository: $REPO_URL"
+  echo "  Prompt composed with program.md reference"
+  echo ""
 fi
 
 # Create state file for stop hook (markdown with YAML frontmatter)
