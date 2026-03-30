@@ -23,9 +23,9 @@ Only later, if needed, decompose those SDKs further. This ensures:
 
 **Tool does:**
 - Consult `decomposition-evaluation-policy.md` (or your project's equivalent evaluation policy)
-- Assess: Does the dependency match a "replace by default" category? Does it fail
-  the evaluation framework?
-- Decide: Keep or Decompose?
+- Assess the dependency using both the library's characteristics and its usage patterns in
+  your codebase
+- Apply the evaluation framework to decide: Keep or Decompose?
 
 **Output:** A decision—either "keep this dependency" or "decompose"
 
@@ -33,8 +33,15 @@ Only later, if needed, decompose those SDKs further. This ensures:
 
 ### If decision is "Keep"
 
-**Workflow ends.** Return the original dependency. The orchestrator will not call
-this workflow on this dependency again.
+**Output:**
+- **Decision:** Keep this dependency
+- **Reasoning:** Concise explanation for the decision. Examples:
+  - "Not in 'replace by default' category and well-maintained"
+  - "Used only as simple utility functions — cheap to keep, expensive to replace"
+  - "Deeply integrated throughout codebase — high cost of decomposition outweighs benefits"
+  - "Implements complex protocol — safer and more reliable to keep"
+
+**Workflow ends.** The orchestrator will not call this workflow on this dependency again.
 
 ---
 

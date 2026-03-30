@@ -6,6 +6,44 @@
 
 **Scope:** Language-agnostic. Focused on preventing unnecessary coupling and reducing surface area.
 
+**Critical Context:** The decision to replace is not just about the library itself, but about how
+it's used in your codebase. Even a "replace by default" library might be worth keeping if it's
+deeply integrated. Even a well-written library might be cheap to replace if it's only used in
+one place. Always assess both the library and its usage patterns before deciding.
+
+---
+
+## Usage Pattern Assessment
+
+Before applying the evaluation framework below, assess how the dependency is used in your codebase:
+
+**Breadth & Integration:**
+- **Scope of usage:** How many files/modules depend on this? Is it isolated or pervasive?
+- **Depth of integration:** Is it a thin wrapper (easy to replace) or a fundamental abstraction
+  (baked into core logic)?
+- **Coupling strength:** Are there strong assumptions about its behavior throughout the code?
+  Tight coupling makes replacement costly and risky.
+
+**Nature of Usage — Which Functions Matter:**
+- **What specific functions/features are you using?** Not all functions in a library have equal
+  replacement cost. A simple utility function is cheap to replace; a complex cryptographic
+  algorithm is not.
+- **Replaceability of used functions:** Can you replace the specific functions you use with
+  simple alternatives, standard library equivalents, or inlined code? Or are they complex,
+  unique functions that would be difficult to reimplement correctly?
+- **Individual vs. bundle:** Are you using one simple function (can be extracted easily) or a
+  suite of interdependent functions (harder to extract)?
+
+**Decision guideline:**
+- **Using simple, well-defined functions** → Easy to replace individually, even if library is
+  complex overall.
+- **Using complex, unique functions** → Hard to replace, even if only used in one place.
+- **High breadth + deep integration + complex functions** → Decomposition is very expensive.
+  Only replace if critical (security, maintenance, legal reasons).
+- **Low breadth + isolated + simple functions** → Decomposition is cheap. Can replace even
+  if library is otherwise acceptable.
+- **Mixed** → Evaluate based on the framework below and risk tolerance.
+
 ---
 
 ## Replace by Default
