@@ -2,6 +2,7 @@
 Auto-generated documentation map.
 ## 📁 File Structure & Dependencies
 ```
+└── phase-0-test-curation.md
 └── decomposition/
     └── decomposition-orchestrator.md
         └── dependency-decomposition-workflow.md
@@ -10,7 +11,7 @@ Auto-generated documentation map.
 ```
 
 ## 📊 Summary
-- Total files: 4
-- Root documents: 1
+- Total files: 5
+- Root documents: 2
 - Total references: 3
 - ✓ No cyclic dependencies

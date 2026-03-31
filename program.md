@@ -38,7 +38,7 @@ You ONLY modify files within `diy_<package>/`. Everything else is fixed.
 
 **You MUST complete this phase before touching diy_<package>/.**
 
-Refer to and follow the instructions in `phase-0-test-curation.md`.
+Refer to and follow the instructions in `docs/phase-0-test-curation.md`.
 
 ---
 
