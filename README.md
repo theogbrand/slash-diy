@@ -121,3 +121,59 @@ Always use `--max-iterations` to prevent infinite loops:
 ```bash
 claude --plugin-dir .
 ```
+
+Take over from step 3 of decomposition/decomposition-orchestrator.md
+
+## Testing Inner Ralph Loop
+
+The inner ralph loop builds a `diy_<sub_package>/` replacement for a sub-dependency, gated by the top-level (Level 0) test suite. It is self-contained and can be tested independently from the full diy-loop.
+
+### Prerequisites
+
+You need a project that has already completed Phase 0 (curated test suite exists and passes against the real library). For example, `lite-llm-lite/` with `diy_litellm/tests/` already set up.
+
+### 1. Create a decomposition context
+
+Save as `decomp_context.json`:
+
+```json
+{
+  "category": "Utilities / Data Structures & Algorithms",
+  "strategy": "Extract and inline specific functions used by diy_litellm",
+  "reference_material": ".slash_diy/reference/annotated_types/",
+  "acceptable_sub_dependencies": ["typing_extensions"],
+  "priority_targets": ["annotated_types"]
+}
+```
+
+### 2. Generate the prompt
+
+```bash
+uv run inner_ralph.py generate-prompt \
+  --context decomp_context.json \
+  --top-package litellm \
+  --sub-package annotated-types \
+  --max-iterations 30
+```
+
+This outputs a complete, self-contained prompt that includes pre-flight steps (baseline verification, import rewriting, scaffolding) and the iterative loop instructions.
+
+### 3. Run it
+
+Feed the generated prompt to a Claude agent. The agent will:
+
+1. **Pre-flight**: Verify Level 0 tests pass with the real sub-package, rewrite imports in `diy_<top_pkg>/` source to point at `diy_<sub_pkg>`, scaffold the sub-package directory
+2. **Loop**: Iteratively build `diy_<sub_pkg>/` by studying failing tests, reading reference code, and committing changes (reverting on regression)
+3. **Exit**: When all Level 0 tests pass (score == 1.0) or max iterations reached
+
+### Utilities
+
+**Rewrite sub-package imports** (used during pre-flight):
+
+```bash
+uv run inner_ralph.py rewrite-sub-imports \
+  --sub-package annotated-types \
+  --target-dir diy_litellm
+```
+
+Rewrites `from annotated_types` / `import annotated_types` to `diy_annotated_types` in source files only (skips `tests/` directory).
