@@ -34,3 +34,4 @@
 - [ ] Rewrite non-pytest tests to standardize on PyTest
     - [ ] Otherwise, define how to handle non-PyTest test cases (TBD)
 - [ ] Matching tests with the release that we downloaded
+- [ ] We should record down the history of all the reasoning, input, and outputs between all the steps in the workflow, so that we can read what the agent decided to do at every step. 

@@ -55,6 +55,65 @@ Cancel the active loop.
 /cancel-diy
 ```
 
+## Decomp MVP
+
+### /decomp-only
+
+Curate tests from a target package, then decompose its dependencies into a local, dependency-free replacement. Runs in two phases: test curation (Phase 0) followed by dependency decomposition (Phase 1).
+
+**Example Usage:**
+```bash
+/decomp-only "I want to replace the usage of litellm in @litellm-sample.md with my own implementation. make it minimal so that it only implements what we need as a replacement and not to be as robust for all other cases in the original library. although minimal it still has to be secure and verified via testing" --url "https://github.com/BerriAI/litellm"
+```
+
+**Usage:**
+```bash
+/decomp-only "<prompt>" --url "<github_url>" [--package "<package_name>"]
+```
+
+**Options:**
+- `--url <github_url>` - GitHub repository URL to clone and decompose (required)
+- `--package <package_name>` - Override the package name (defaults to the repo name from the URL)
+
+The individual phases of `/decomp-only` are also available as separate commands, useful if a run fails midway and you need to resume from a specific phase:
+
+### /setup
+
+Scaffold the project: clone the target repo, copy plugin files, and install the real library for test validation.
+
+**Usage:**
+```bash
+/setup --url "https://github.com/BerriAI/litellm"
+```
+
+**Options:**
+- `--url <github_url>` - GitHub repository URL to clone (required)
+- `--package <package_name>` - Override the package name (defaults to the repo name from the URL)
+
+### /test-curate
+
+Phase 0: Generate and discover tests, then validate them against the real library. Requires `/setup` to have been run first.
+
+**Usage:**
+```bash
+/test-curate "I want to replace the usage of litellm in @sample.md with my own implementation" --package litellm
+```
+
+**Options:**
+- `--package <package_name>` - The target package name (required)
+
+### /decompose
+
+Phase 1: Dependency decomposition. Seeds the queue with the target package and iteratively decomposes each dependency. Requires `/test-curate` to have been completed first.
+
+**Usage:**
+```bash
+/decompose --package litellm
+```
+
+**Options:**
+- `--package <package_name>` - The target package name (required)
+
 ## Prompt Writing Tips
 
 ### Clear completion criteria
