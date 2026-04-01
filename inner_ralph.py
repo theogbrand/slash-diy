@@ -27,6 +27,7 @@ def generate_prompt(args):
         "sub_package": sub_pkg,
         "category": ctx.get("category", "Unknown"),
         "strategy": ctx.get("strategy", "Study reference and reimplement"),
+        "functions_to_replace": ", ".join(ctx.get("functions_to_replace", [])) or "none identified",
         "reference_material": ctx.get("reference_material", f".slash_diy/reference/{sub_pkg}/"),
         "acceptable_sub_dependencies": ", ".join(ctx.get("acceptable_sub_dependencies", [])) or "none",
         "max_iterations": str(args.max_iterations),

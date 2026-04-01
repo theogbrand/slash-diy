@@ -10,6 +10,7 @@ You are building `diy_{sub_package}/` so that the Level 0 test suite for `diy_{t
 | Sub-package to build | `{sub_package}` |
 | Category | {category} |
 | Decomposition strategy | {strategy} |
+| Functions to replace | {functions_to_replace} |
 | Reference material | `{reference_material}` |
 | Acceptable sub-dependencies | {acceptable_sub_dependencies} |
 | Max iterations | {max_iterations} |

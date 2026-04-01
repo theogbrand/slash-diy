@@ -199,11 +199,31 @@ Save as `decomp_context.json`:
 {
   "category": "Utilities / Data Structures & Algorithms",
   "strategy": "Extract and inline specific functions used by diy_litellm",
+  "functions_to_replace": ["BaseMetadata", "GroupedMetadata", "Gt", "Ge", "Lt", "Le"],
   "reference_material": ".slash_diy/reference/annotated_types/",
-  "acceptable_sub_dependencies": ["typing_extensions"],
-  "priority_targets": ["annotated_types"]
+  "acceptable_sub_dependencies": ["typing_extensions"]
 }
 ```
+
+TODO:
+For now, Orchestrator outputs in Markdown:
+example from the openai evaluation, where decomp-queue.json has {
+  "pending": ["openai"]
+}:
+
+**Decision:** Decompose
+**Reasoning:** The `openai` Python SDK is explicitly
+listed...
+**Category:** API wrapper / SDK binding
+**Strategy:** Replace `openai.OpenAI().chat.completio
+ns.with_raw_response.create()` with a direct HTTP
+POST using `httpx`...
+**Functions to replace:** openai.OpenAI(),
+client.chat.completions.with_raw_response.create()...
+**Reference material:** OpenAI Chat Completions API
+docs: https://platform.openai.com/docs/api-reference/
+chat/create...
+**Acceptable sub-dependencies:** httpx, pydantic
 
 ### 2. Generate the prompt
 
