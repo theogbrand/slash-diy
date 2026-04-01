@@ -109,6 +109,9 @@ b. Execute the setup script to initialize the inner DIY loop:
 "${CLAUDE_PLUGIN_ROOT}/scripts/activate-inner-diy-loop.sh" $ARGUMENTS
 ```
 
+# TODO: add the SubAgent Stop Hook to call inner-diy-loop-stop-hook.sh and tie it to the decomp-implementer agent 
+You can only move to step 4 when you have recieved the COMPLETION PROMISE (<promise>DONE</promise>) from the SubAgent. If a subagent determines that the task is done but does not return the completion promise, spin up a new subagent to continue the task.
+
 # TODO: Prompt created in step (b) should contain all the args needed at each subagent loop iteration
 <!-- c. Pass the generated prompt from step (b) to the **decomp-implementer** agent to run the inner ralph loop until all Level 0 tests pass or max iterations are reached.
 
