@@ -101,7 +101,7 @@ b. Pre-flight Checks
 
 Complete these steps IN ORDER before entering the loop.
 
-### 1. Verify baseline
+#### 1. Verify baseline
 
 Run Level 0 tests with the REAL `{sub_package}` still installed:
 
@@ -111,7 +111,7 @@ uv run pytest diy_{top_package}/tests/ -v --tb=short 2>&1
 
 **All tests MUST pass.** If any fail, STOP — the baseline is broken and must be fixed before proceeding.
 
-### 2. Rewrite imports
+#### 2. Rewrite imports
 
 Swap `{sub_package}` imports in `diy_{top_package}/` source code to point at `diy_{sub_package}`:
 
@@ -119,14 +119,14 @@ Swap `{sub_package}` imports in `diy_{top_package}/` source code to point at `di
 uv run inner_ralph.py rewrite-sub-imports --sub-package {sub_package} --target-dir diy_{top_package}
 ```
 
-### 3. Scaffold the sub-package
+#### 3. Scaffold the sub-package
 
 ```bash
 mkdir -p diy_{sub_package}
 touch diy_{sub_package}/__init__.py
 ```
 
-### 4. Initialize tracking
+#### 4. Initialize tracking
 
 ```bash
 echo -e "commit\tscore\tpassed\tfailed\ttotal\tdescription" > results.tsv
@@ -136,7 +136,7 @@ grep "^score:\|^passed:\|^failed:\|^total:" run.log
 
 Record baseline (score should be ~0 after the import swap).
 
-c. Execute the setup script to initialize the inner DIY loop with the decomp context:
+c. Execute this setup script to initialize the prompt for the inner DIY loop:
 
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/activate-inner-diy-loop.sh" \
@@ -146,7 +146,9 @@ c. Execute the setup script to initialize the inner DIY loop with the decomp con
     --max-iterations 10 \
 ```
 
-You can only move to step 4 when you have recieved the COMPLETION PROMISE (<promise>DONE</promise>) from the SubAgent. If a subagent determines that the task is done but does not return the completion promise, spin up a new subagent to continue the task.
+Spawn the **decomp-implementer** agent.
+
+You MUST only move to step 4 when you have recieved the COMPLETION PROMISE (<promise>DONE</promise>) from the **decomp-implementer** agent. If a **decomp-implementer** agent exits but does not return you the completion promise (<promise>DONE</promise>), spin up a new **decomp-implementer** agent to continue the task.
 
 d. After the subagent finishes and exits with a completion promise, discover new external imports:
 ```bash
