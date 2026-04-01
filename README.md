@@ -27,12 +27,13 @@ Curate tests from a target package, then decompose its dependencies into a local
 
 **Usage:**
 ```bash
-/diy-decomp "<prompt>" --url "<github_url>" [--package "<package_name>"]
+/diy-decomp "<prompt>" --url "<github_url>" [--package "<package_name>"] [--skip-discovery]
 ```
 
 **Options:**
 - `--url <github_url>` - GitHub repository URL to clone and decompose (required)
 - `--package <package_name>` - Override the package name (defaults to the repo name from the URL)
+- `--skip-discovery` - Skip the test discovery step (test generation still works without discovered tests)
 
 The individual phases of `/diy-decomp` are also available as separate skills, useful if a run fails midway and you need to resume from a specific phase:
 

@@ -17,23 +17,9 @@ Skill files in `skills/*/SKILL.md` and agent files in `agents/` must follow conv
 ```bash
 uv run python scripts/orchestration-linter.py           # lint + print flow
 uv run python scripts/orchestration-linter.py --write    # lint + update ORCHESTRATION_FLOW.md
-uv run python scripts/orchestration-linter.py --check    # lint + verify ORCHESTRATION_FLOW.md is current
 ```
 
-The linter validates:
-
-| Convention | Format | Example |
-|---|---|---|
-| Sections | `## Title` | `## Phase 0: Test Curation` |
-| Steps | `### N. Title` (sequential per section) | `### 1. Dequeue` |
-| Agents | `**agent-name** agent` (must exist in `agents/`) | `Use the **decomp-evaluator** agent.` |
-| Conditionals | `- If **condition** then **action**.` | `- If **Keep** then **go back to step 1**.` |
-| Loop start | `**Begin loop.**` | `**Begin loop.** Repeat until the queue is empty.` |
-| Loop end | `**Loop back to step N.**` | `**Loop back to step 1.**` |
-| Scripts | `${CLAUDE_PLUGIN_ROOT}/` or `${CLAUDE_SKILL_DIR}/` prefix | `uv run ${CLAUDE_SKILL_DIR}/scripts/rewrite_imports.py` |
-| Arguments | `argument-hint:` frontmatter | `argument-hint: "PROMPT --package PKG"` |
-
-`ORCHESTRATION_FLOW.md` is auto-generated and should not be edited manually. Always regenerate it with `--write` after making changes.
+Run without flags to see the full list of rules (OL001–OL017) and the current orchestration flow. `ORCHESTRATION_FLOW.md` is auto-generated and should not be edited manually — always regenerate it with `--write` after making changes.
 
 ## Code Style & Philosophy
 
