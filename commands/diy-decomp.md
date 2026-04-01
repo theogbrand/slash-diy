@@ -152,11 +152,6 @@ You MUST only move to step 4 when you have recieved the COMPLETION PROMISE (<pro
 
 If the **decomp-implementer** agent returns the completion promise `<promise>MAX ITERATIONS REACHED</promise>`, stop the loop and report back to the user that the maximum number of iterations has been reached.
 
-e. After the subagent finishes and exits with a completion promise, discover new external imports:
-```bash
-grep -rh "^from \|^import " diy_<PACKAGE>/ --include="*.py" | sort -u
-```
-
 ### 4. Enqueue
 
 ```bash
