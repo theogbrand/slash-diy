@@ -8,7 +8,7 @@ set -euo pipefail
 # Parse arguments
 PROMPT_PARTS=()
 MAX_ITERATIONS=0
-COMPLETION_PROMISE="null"
+COMPLETION_PROMISE="DONE"
 REPO_URL=""
 PACKAGE_NAME=""
 
