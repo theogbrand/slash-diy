@@ -15,6 +15,15 @@ You are building `diy_{sub_package}/` so that the Level 0 test suite for `diy_{t
 | Acceptable sub-dependencies | {acceptable_sub_dependencies} |
 | Max iterations | {max_iterations} |
 
+## Reconnaissance (do this ONCE before entering the loop)
+
+1. Run ALL tests (no `-x`) to see the full failure surface:
+     uv run pytest diy_{top_package}/tests/ -v --tb=line 2>&1
+2. List every import the top package expects from the sub-package:
+     grep -rh "from diy_{sub_package}" diy_{top_package}/ --include="*.py" | sort -u
+3. From the above, identify the **required API surface** — the classes, functions, and constants that `diy_{sub_package}/` must export.
+4. Plan an implementation order: shared foundations first (base classes, core types), then leaf functions. Fixing a foundation often unblocks many tests at once.
+
 ## The Loop
 
 ```
@@ -24,13 +33,16 @@ FOREVER:
 2. Study the failing test to understand what diy_{sub_package}/ must provide
 3. Study reference implementation in {reference_material}
 4. Modify files in diy_{sub_package}/ ONLY
-5. Commit:
+5. Commit (record HEAD before so you can safely revert):
+     BEFORE=$(git rev-parse HEAD)
      git add diy_{sub_package}/ && git commit -m "inner-N: description"
+   If nothing was committed (no changes), go back to step 2.
 6. Run full suite:
      uv run run_tests.py > run.log 2>&1
      grep "^score:\|^passed:\|^failed:" run.log
 7. If score IMPROVED → keep commit, append to results.tsv
-8. If score SAME or WORSE → git reset --hard HEAD~1
+8. If score SAME or WORSE → revert ONLY if HEAD changed:
+     [[ "$(git rev-parse HEAD)" != "$BEFORE" ]] && git reset --hard HEAD~1
 9. If score == 1.000000 → EXIT (all Level 0 tests pass)
 10. Repeat
 ```
