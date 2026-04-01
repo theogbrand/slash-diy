@@ -2,15 +2,6 @@
 name: decompose
 description: "Phase 1: Dependency decomposition. Only invoke when explicitly requested by the user or by the diy-decomp orchestrator."
 argument-hint: "--package PACKAGE_NAME"
-hooks:
-  SubagentStart:
-    - hooks:
-        - type: command
-          command: "echo \"[$(date -u +%Y-%m-%dT%H:%M:%SZ)] START $(echo $CLAUDE_HOOK_EVENT | jq -c '{tool: .tool_name, input: .tool_input}')\" >> .claude/decompose-subagent.log"
-  SubagentStop:
-    - hooks:
-        - type: command
-          command: "echo \"[$(date -u +%Y-%m-%dT%H:%M:%SZ)] STOP  $(echo $CLAUDE_HOOK_EVENT | jq -c '{tool: .tool_name, output: .tool_output}')\" >> .claude/decompose-subagent.log"
 ---
 
 # Decompose

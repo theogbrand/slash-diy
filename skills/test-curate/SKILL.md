@@ -2,15 +2,6 @@
 name: test-curate
 description: "Phase 0: Generate and discover tests, validate against real library. Only invoke when explicitly requested by the user or by the diy-decomp orchestrator."
 argument-hint: "PROMPT --package PACKAGE_NAME"
-hooks:
-  SubagentStart:
-    - hooks:
-        - type: command
-          command: "echo \"[$(date -u +%Y-%m-%dT%H:%M:%SZ)] START $(echo $CLAUDE_HOOK_EVENT | jq -c '{tool: .tool_name, input: .tool_input}')\" >> .claude/test-curate-subagent.log"
-  SubagentStop:
-    - hooks:
-        - type: command
-          command: "echo \"[$(date -u +%Y-%m-%dT%H:%M:%SZ)] STOP  $(echo $CLAUDE_HOOK_EVENT | jq -c '{tool: .tool_name, output: .tool_output}')\" >> .claude/test-curate-subagent.log"
 ---
 
 # Test Curate
