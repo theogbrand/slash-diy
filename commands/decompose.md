@@ -27,7 +27,7 @@ Then run the decomposition loop below until the queue is empty.
 uv run python ${CLAUDE_PLUGIN_ROOT}/scripts/decomp.py dequeue
 ```
 
-- **If queue is empty** -> decomposition complete, stop.
+- If **queue is empty** then **stop, decomposition complete**.
 
 ### 2. Evaluate
 
@@ -35,8 +35,8 @@ Use the **decomp-evaluator** agent to evaluate whether the dequeued library shou
 
 Pass it the library name and the diy package name (e.g., `diy_litellm`).
 
-- **Keep** -> go back to step 1.
-- **Decompose** -> continue to step 3 with the evaluation output.
+- If **Keep** then **go back to step 1**.
+- If **Decompose** then **continue to step 3** with the evaluation output.
 
 ### 3. Implement & Validate
 

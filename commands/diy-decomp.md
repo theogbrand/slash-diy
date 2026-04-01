@@ -46,7 +46,7 @@ uv run pytest diy_<PACKAGE>/tests/generated/ -v --tb=short 2>&1
 Prune failures: delete tests that fail due to missing API keys, network issues, or
 dependencies on the full library. Re-run until all remaining tests pass.
 
-- **If ZERO tests survive** -> ABORT.
+- If **zero tests survive** then **abort**.
 
 ### 4. Rewrite imports
 
@@ -81,14 +81,14 @@ uv run python ${CLAUDE_PLUGIN_ROOT}/scripts/decomp.py enqueue <PACKAGE>
 uv run python ${CLAUDE_PLUGIN_ROOT}/scripts/decomp.py dequeue
 ```
 
-- **If queue is empty** -> done.
+- If **queue is empty** then **stop, decomposition complete**.
 
 ### 2. Evaluate
 
 Use the **decomp-evaluator** agent. Pass it the library name and diy package name.
 
-- **Keep** -> go back to step 1.
-- **Decompose** -> continue to step 3.
+- If **Keep** then **go back to step 1**.
+- If **Decompose** then **continue to step 3**.
 
 ### 3. Implement
 

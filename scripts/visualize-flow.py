@@ -35,8 +35,9 @@ LOOP_BACK_PATTERN = re.compile(r"^\*\*Loop back to step (\d+)\.\*\*", re.MULTILI
 STEP_HEADER_PATTERN = re.compile(r"^###\s+(\d+)\.\s+(.*)", re.MULTILINE)
 SECTION_HEADER_PATTERN = re.compile(r"^##\s+(.+)$", re.MULTILINE)
 AGENT_PATTERN = re.compile(r"\*\*(\S+?)\*\*\s+agent")
+# Convention: - If **condition** then **action**.
 CONDITIONAL_PATTERN = re.compile(
-    r"[-*]\s+\*\*(.+?)\*\*\s*(?:\u2192|->)\s*(.+?)\.?\s*$", re.MULTILINE
+    r"[-*]\s+If\s+\*\*(.+?)\*\*\s+then\s+\*\*(.+?)\*\*", re.MULTILINE
 )
 # Match script invocations inside bash code blocks.
 # Convention: all plugin scripts use ${CLAUDE_PLUGIN_ROOT}/.
@@ -122,15 +123,37 @@ def lint_command(
                 )
             )
 
-    # Conditionals should use - **Condition** -> action
+    # Conditionals must use: - If **condition** then **action**.
     for i, line in enumerate(lines, 1):
-        if re.match(r"^\s*[-*]\s+(?:If|if)\s+", line) and "**" not in line:
+        stripped = line.strip()
+        # Old convention: -> instead of then
+        if re.match(r"^[-*]\s+If\s+\*\*.+\*\*\s*(?:\u2192|->)", stripped):
             warnings.append(
                 LintWarning(
                     filename,
                     i,
-                    "Conditional should use '- **Condition** -> action'. "
-                    f"Found: {line.strip()}",
+                    "Use 'then' instead of '->'. "
+                    f"Convention: '- If **condition** then **action**'. Found: {stripped}",
+                )
+            )
+        # Bold wrapping the "If" keyword
+        if re.match(r"^[-*]\s+\*\*If\s+", stripped):
+            warnings.append(
+                LintWarning(
+                    filename,
+                    i,
+                    "'If' should not be bold. "
+                    f"Convention: '- If **condition** then **action**'. Found: {stripped}",
+                )
+            )
+        # Unbolded condition or action
+        if re.match(r"^[-*]\s+[Ii]f\s+", stripped) and "**" not in stripped:
+            warnings.append(
+                LintWarning(
+                    filename,
+                    i,
+                    "Condition and action must be bold. "
+                    f"Convention: '- If **condition** then **action**'. Found: {stripped}",
                 )
             )
 

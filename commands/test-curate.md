@@ -43,7 +43,7 @@ uv run pytest diy_<PACKAGE>/tests/generated/ -v --tb=short 2>&1
 - Delete test files that fail due to missing API keys, network issues, or
   dependencies on the full library that we can't satisfy
 - Re-run until all remaining tests pass
-- **If ZERO tests survive, ABORT** -- output an error explaining the situation
+- If **zero tests survive** then **abort** -- output an error explaining the situation.
 
 Print a summary:
 ```
