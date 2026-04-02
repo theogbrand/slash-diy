@@ -107,9 +107,8 @@ Phase 1: Dependency decomposition. Seeds the queue with the target package and i
 claude --plugin-dir .
 ```
 
-Step 3 of decomposition/decomposition-orchestrator.md uses the inner ralph loop below.
-
-## Testing Inner Ralph Loop
+<!-- TODO: Rewrite this once tested -->
+<!-- ## Testing Inner Ralph Loop
 
 The inner ralph loop builds a `diy_<sub_package>/` replacement for a sub-dependency, gated by the top-level (Level 0) test suite. It is self-contained and can be tested independently from the full diy-loop.
 
@@ -169,7 +168,7 @@ uv run inner_ralph.py rewrite-sub-imports \
   --target-dir diy_litellm
 ```
 
-Rewrites `from annotated_types` / `import annotated_types` to `diy_annotated_types` in source files only (skips `tests/` directory).
+Rewrites `from annotated_types` / `import annotated_types` to `diy_annotated_types` in source files only (skips `tests/` directory). -->
 ### Orchestration Linter
 
 After editing skill or agent files, run the linter to validate conventions and regenerate the flow visualization:
