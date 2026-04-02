@@ -70,8 +70,9 @@ from typing import Any, Literal
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-SKILLS_DIR = REPO_ROOT / "skills"
-AGENTS_DIR = REPO_ROOT / "agents"
+PLUGIN_DIR = REPO_ROOT / "plugins" / "slash-diy"
+SKILLS_DIR = PLUGIN_DIR / "skills"
+AGENTS_DIR = PLUGIN_DIR / "agents"
 OUTPUT_FILE = REPO_ROOT / "ORCHESTRATION_FLOW.md"
 
 ORCHESTRATOR_COMMANDS = ["setup", "test-curate", "decompose", "diy-decomp", "diy-loop"]
@@ -328,7 +329,7 @@ def _format_script_label(groups: tuple[str | None, ...]) -> str:
 def _resolve_script_path(path_var: str, script_path: str, command_name: str) -> Path:
     """Resolve a script variable reference to an absolute path."""
     if path_var == "CLAUDE_PLUGIN_ROOT":
-        return REPO_ROOT / script_path
+        return PLUGIN_DIR / script_path
     # CLAUDE_SKILL_DIR -> skills/<command_name>/
     return SKILLS_DIR / command_name / script_path
 

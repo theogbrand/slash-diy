@@ -78,7 +78,7 @@ touch diy_{sub_package}/__init__.py
 Seed the state file with placeholder values:
 
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/activate-inner-diy-loop.sh" --max-iterations 10
+"${CLAUDE_SKILL_DIR}/scripts/activate-inner-diy-loop.sh" --max-iterations 10
 ```
 
 #### e. Read `.claude/decomp_context.md` and fill in the `PLACEHOLDER` values in `.claude/inner-diy-loop.local.md`:
