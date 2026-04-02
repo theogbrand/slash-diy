@@ -7,13 +7,14 @@ argument-hint: "--context CONTEXT_FILE --top-package PACKAGE --sub-package LIBRA
 
 **Prerequisite:** `/test-curate` must have been completed first (curated test suite exists and passes against the real library). A decomposition context file (JSON or markdown evaluation output) must exist — see `examples/` for format.
 
-1. Generate the inner ralph loop prompt:
+1. Generate the runtime variables state body:
 
 ```bash
-uv run inner_ralph.py generate-prompt $ARGUMENTS
+uv run inner_ralph.py generate-state-body $ARGUMENTS
 ```
 
-2. Spawn a subagent using the Agent tool with the generated prompt as the task. The agent will:
+2. Spawn a subagent using the Agent tool with the decomp-implementer agent. The agent will:
+   - Read runtime variables from `.claude/inner-diy-loop.local.md`
    - Verify baseline tests pass with the real sub-package
    - Rewrite imports to point at the DIY replacement
    - Iteratively build `diy_<sub_package>/` until all Level 0 tests pass

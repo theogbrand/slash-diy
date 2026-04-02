@@ -125,7 +125,7 @@ if [[ -z "$SUB_PACKAGE_NAME" ]]; then
   exit 1
 fi
 
-# Generate prompt from decomp context via inner_ralph.py
+# Generate state body from decomp context via inner_ralph.py
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 
 if [[ ! -f "$CONTEXT_FILE" ]]; then
@@ -138,17 +138,17 @@ if [[ "$ITER_LIMIT" -eq 0 ]]; then
   ITER_LIMIT=30
 fi
 
-PROMPT=$(uv run python "$PLUGIN_ROOT/skills/decompose/scripts/inner_ralph.py" generate-prompt \
+STATE_BODY=$(uv run python "$PLUGIN_ROOT/skills/decompose/scripts/inner_ralph.py" generate-state-body \
   --context "$CONTEXT_FILE" \
   --top-package "$PACKAGE_NAME" \
   --sub-package "$SUB_PACKAGE_NAME" \
   --max-iterations "$ITER_LIMIT")
 
-if [[ $? -ne 0 ]] || [[ -z "$PROMPT" ]]; then
-  echo "❌ Error: Failed to generate prompt from context" >&2
+if [[ $? -ne 0 ]] || [[ -z "$STATE_BODY" ]]; then
+  echo "❌ Error: Failed to generate state body from context" >&2
   exit 1
 fi
-echo "━━━ Generated prompt from decomp context ━━━"
+echo "━━━ Generated state body from decomp context ━━━"
 echo "  Top package: $PACKAGE_NAME"
 echo "  Sub package: $SUB_PACKAGE_NAME"
 echo "  Context file: $CONTEXT_FILE"
@@ -167,7 +167,7 @@ completion_promise: "DONE"
 started_at: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 ---
 
-$PROMPT
+$STATE_BODY
 EOF
 
 # Output setup message
@@ -191,7 +191,7 @@ To monitor: head -10 .claude/inner-diy-loop.local.md
 EOF
 
 echo ""
-echo "$PROMPT"
+echo "$STATE_BODY"
 
 echo ""
 echo "═══════════════════════════════════════════════════════════"

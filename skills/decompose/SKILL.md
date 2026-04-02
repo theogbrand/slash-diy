@@ -43,11 +43,7 @@ Pass it the library name and the diy package name (e.g., `diy_litellm`).
 
 ### 3. Implement & Validate
 
-a. Save the **decomp-evaluator** output from step 2 to `.claude/decomp_context.md`. The file must
-contain the evaluator's full Decompose decision (**decision**, **reasoning**, **category**, **strategy**,
-**functions_to_replace**, **reference_material**, **acceptable_sub_dependencies**).
-
-b. Pre-flight Checks
+a. Pre-flight Checks
 
 Complete these steps IN ORDER before entering the loop.
 
@@ -76,7 +72,7 @@ mkdir -p diy_{sub_package}
 touch diy_{sub_package}/__init__.py
 ```
 
-c. Execute this setup script to initialize the prompt for the **decomp-implementer** agent:
+b. Execute this setup script to initialize the state for the **decomp-implementer** agent:
 
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/activate-inner-diy-loop.sh" \
@@ -86,7 +82,7 @@ c. Execute this setup script to initialize the prompt for the **decomp-implement
     --max-iterations 10 \
 ```
 
-d. Use the **decomp-implementer** agent to implement the sub-package.
+c. Use the **decomp-implementer** agent to implement the sub-package.
 
 You MUST only move to step 4 when you have received **completion_promise** = `DONE` from the **decomp-implementer** agent. If a **decomp-implementer** agent exits without returning `DONE`, spin up a new **decomp-implementer** agent to continue the task.
 

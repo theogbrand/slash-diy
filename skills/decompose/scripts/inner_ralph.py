@@ -1,8 +1,8 @@
 """
-Inner Ralph Loop — generate prompts and rewrite sub-package imports.
+Inner Ralph Loop — generate state body and rewrite sub-package imports.
 
 Usage:
-    uv run inner_ralph.py generate-prompt --context ctx.md --top-package litellm --sub-package annotated-types
+    uv run inner_ralph.py generate-state-body --context ctx.md --top-package litellm --sub-package annotated-types --max-iterations 10
     uv run inner_ralph.py rewrite-sub-imports --sub-package annotated-types --target-dir diy_litellm
 """
 
@@ -10,8 +10,6 @@ import argparse
 import json
 import re
 from pathlib import Path
-
-TEMPLATE_FILE = Path(__file__).parent.parent / "assets" / "inner_ralph_loop.md"
 
 # Fields recognized by the markdown parser (lowercase label → dict key).
 _FIELD_HEADERS = {
@@ -81,18 +79,18 @@ def _parse_markdown_context(text: str) -> dict:
     return ctx
 
 
-def generate_prompt(args: argparse.Namespace) -> None:
+def generate_state_body(args: argparse.Namespace) -> None:
+    """Output the runtime variables as a markdown table for the state file body."""
     raw = Path(args.context).read_text()
     try:
         ctx = json.loads(raw)
     except json.JSONDecodeError:
         ctx = _parse_markdown_context(raw)
-    template = TEMPLATE_FILE.read_text()
 
     sub_pkg = args.sub_package.replace("-", "_")
     top_pkg = args.top_package.replace("-", "_")
 
-    replacements = {
+    variables = {
         "top_package": top_pkg,
         "sub_package": sub_pkg,
         "category": ctx.get("category", "Unknown"),
@@ -109,11 +107,10 @@ def generate_prompt(args: argparse.Namespace) -> None:
         "max_iterations": str(args.max_iterations),
     }
 
-    prompt = template
-    for key, value in replacements.items():
-        prompt = prompt.replace(f"{{{key}}}", value)
-
-    print(prompt)
+    lines = ["| Field | Value |", "|---|---|"]
+    for key, value in variables.items():
+        lines.append(f"| {key} | {value} |")
+    print("\n".join(lines))
 
 
 def rewrite_sub_imports(args: argparse.Namespace) -> None:
@@ -147,7 +144,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Inner Ralph Loop utilities")
     sub = parser.add_subparsers(dest="command")
 
-    gp = sub.add_parser("generate-prompt", help="Generate inner ralph loop prompt")
+    gp = sub.add_parser(
+        "generate-state-body",
+        help="Generate runtime variables table for state file body",
+    )
     gp.add_argument(
         "--context",
         required=True,
@@ -168,8 +168,8 @@ def main() -> None:
     )
 
     args = parser.parse_args()
-    if args.command == "generate-prompt":
-        generate_prompt(args)
+    if args.command == "generate-state-body":
+        generate_state_body(args)
     elif args.command == "rewrite-sub-imports":
         rewrite_sub_imports(args)
     else:

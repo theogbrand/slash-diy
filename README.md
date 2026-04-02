@@ -138,17 +138,17 @@ Example for `openai`: refer to examples/decomp_context_openai.md
 
 Example for `pydantic`: refer to examples/decomp_context_pydantic.md
 
-### 2. Generate the prompt
+### 2. Generate the state body
 
 ```bash
-uv run inner_ralph.py generate-prompt \
+uv run inner_ralph.py generate-state-body \
   --context decomp_context.md \
   --top-package litellm \
   --sub-package openai \
   --max-iterations 30
 ```
 
-The `--context` flag accepts either JSON or markdown — format is auto-detected. This outputs a complete, self-contained prompt that includes pre-flight steps (baseline verification, import rewriting, scaffolding) and the iterative loop instructions.
+The `--context` flag accepts either JSON or markdown — format is auto-detected. This outputs a markdown table of runtime variables that becomes the body of `.claude/inner-diy-loop.local.md`. The decomp-implementer agent reads these variables at runtime.
 
 ### 3. Run it
 

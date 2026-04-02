@@ -1,18 +1,18 @@
 ---
-description: "Generate an inner ralph loop prompt from a decomposition context"
+description: "Generate the runtime variables state body from a decomposition context"
 argument-hint: "--context CONTEXT_FILE --top-package PACKAGE --sub-package LIBRARY [--max-iterations N]"
 ---
 
-# Generate Ralph Prompt
+# Generate Ralph State Body
 
 **Prerequisite:** `/test-curate` must have been completed first (curated test suite exists and passes against the real library). A decomposition context file (JSON or markdown evaluation output) must exist — see `examples/` for format.
 
-Generate the inner ralph loop prompt:
+Generate the runtime variables table for the inner diy loop state file:
 
 ```bash
-uv run inner_ralph.py generate-prompt $ARGUMENTS
+uv run inner_ralph.py generate-state-body $ARGUMENTS
 ```
 
-This outputs a complete, self-contained prompt that includes pre-flight steps (baseline verification, import rewriting, scaffolding) and the iterative loop instructions. The `--context` flag accepts JSON or markdown — format is auto-detected.
+This outputs a markdown table of runtime variables (top_package, sub_package, category, strategy, etc.) that becomes the body of `.claude/inner-diy-loop.local.md`. The `--context` flag accepts JSON or markdown — format is auto-detected.
 
-Print the generated prompt to the user.
+Print the generated state body to the user.
