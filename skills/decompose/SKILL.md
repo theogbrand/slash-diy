@@ -76,23 +76,13 @@ mkdir -p diy_{sub_package}
 touch diy_{sub_package}/__init__.py
 ```
 
-#### 4. Initialize tracking
-
-```bash
-echo -e "commit\tscore\tpassed\tfailed\ttotal\tdescription" > results.tsv
-uv run run_tests.py > run.log 2>&1
-grep "^score:\|^passed:\|^failed:\|^total:" run.log
-```
-
-Record baseline (score should be ~0 after the import swap).
-
 c. Execute this setup script to initialize the prompt for the **decomp-implementer** agent:
 
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/scripts/activate-inner-diy-loop.sh" \
-    --context decomp_context.md \
-    --package <PACKAGE> \
-    --sub-package <LIBRARY> \
+    --context .claude/decomp_context.md \
+    --package {top_package} \
+    --sub-package {sub_package} \
     --max-iterations 10 \
 ```
 
