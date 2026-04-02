@@ -45,6 +45,10 @@ These are the low-level layer that decomposition usually stops at unless there i
 | Image Processing | `Pillow` | C-accelerated codec for dozens of formats |
 | gRPC & Protobuf | `grpcio`, `protobuf` | Google-maintained binary wire protocol + codegen via C bindings |
 
+**Foundational primitives are always Keep, regardless of how narrowly they are used.** Narrow usage is not grounds for reclassifying a foundational primitive. These libraries are kept because of *what they are* (protocol implementations, C/Rust bindings, battle-tested infrastructure), not because of *how much* you use them.
+
+**If a foundational primitive is ever decomposed (e.g. by explicit user request), decompose one layer at a time.** Go to the next layer down, not straight to stdlib. For example: `httpx` → `urllib3`, never `httpx` → `urllib`/`http.client`.
+
 #### Replacement Signals
 
 These are indicators, not automatic verdicts. Weigh against step 1 findings and the primitives list above.
@@ -55,6 +59,16 @@ These are indicators, not automatic verdicts. Weigh against step 1 findings and 
 | **AI/LLM orchestration** (`langchain`, `litellm`) | Heavy transitive deps, core is HTTP + retry | Direct HTTP calls + standard control flow |
 | **Trivial utilities** (lodash-equivalents, date helpers) | Inlineable with stdlib | Pure helper functions |
 | **Deep dep trees** (> 3 transitive deps) | Supply-chain surface area | Extract and reimplement core logic |
+
+#### Can Replace ≠ Should Replace
+
+Even if stdlib or simpler code can technically replicate what a library does, that alone is not sufficient reason to decompose. Before recommending decomposition, also consider:
+- **Error handling quality:** Does the library handle edge cases, retries, timeouts, and error reporting better than a naive replacement would?
+- **Maintainability:** Will a hand-rolled replacement be harder to maintain as usage grows?
+- **Community trust:** Is the library well-governed with security practices that a replacement would lack?
+- **Growth risk:** If usage expands later, will the replacement need to be rewritten back toward the original library?
+
+If the answer to any of these is "yes," lean toward Keep.
 
 #### Unfamiliar Libraries
 

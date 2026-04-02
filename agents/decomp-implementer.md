@@ -46,6 +46,12 @@ Repeat steps 1–3 until all tests pass or you hit the max iteration limit.
 
 - Modify files in `diy_{sub_package}/` **ONLY**.
 - Focus on the specific failures identified in step 1.
+- Before moving to validation, fix all lint and type errors:
+  ```
+  uv run ruff check --fix diy_{sub_package}/
+  uv run ruff format diy_{sub_package}/
+  uv run ty check diy_{sub_package}/
+  ```
 
 ### 3. Validate
 
