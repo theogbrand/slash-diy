@@ -1,17 +1,15 @@
 #!/bin/bash
 
-# DIY Loop Setup Script
-# Creates state file for in-session DIY loop
+# DIY Loop Activation Script
+# Seeds .claude/inner-diy-loop.local.md with YAML frontmatter and a
+# state body table containing placeholder values. The decompose skill
+# (step 4: Generate State Body) fills in the placeholders afterward.
 
 set -euo pipefail
 
 # Parse arguments
 MAX_ITERATIONS=0
-PACKAGE_NAME=""
-CONTEXT_FILE=""
-SUB_PACKAGE_NAME=""
 
-# Parse options
 while [[ $# -gt 0 ]]; do
   case $1 in
     -h|--help)
@@ -22,20 +20,18 @@ USAGE:
   /inner-diy-loop [OPTIONS]
 
 OPTIONS:
-  --context <file>               Decomp context file (from decomp-evaluator output)
-  --package <name>               Top-level package name
-  --sub-package <name>           Sub-package to build
   --max-iterations <n>           Maximum iterations before auto-stop (default: unlimited)
   -h, --help                     Show this help message
 
 DESCRIPTION:
-  Starts a DIY loop in your CURRENT session. The stop hook prevents
-  exit and feeds your output back as input until completion or iteration limit.
+  Seeds a DIY loop state file with YAML frontmatter and placeholder
+  values. The decompose skill's "Generate State Body" step fills in
+  the actual values from .claude/decomp_context.md afterward.
+
+  The stop hook prevents exit and feeds your output back as input
+  until completion or iteration limit.
 
   To signal completion, output: <promise>DONE</promise>
-
-EXAMPLES:
-  /inner-diy-loop --context decomp_context.md --package requests --sub-package urllib3 --max-iterations 10
 
 STOPPING:
   Only by reaching --max-iterations or detecting <promise>DONE</promise>
@@ -53,51 +49,13 @@ HELP_EOF
     --max-iterations)
       if [[ -z "${2:-}" ]]; then
         echo "❌ Error: --max-iterations requires a number argument" >&2
-        echo "" >&2
-        echo "   Valid examples:" >&2
-        echo "     --max-iterations 10" >&2
-        echo "     --max-iterations 50" >&2
-        echo "     --max-iterations 0  (unlimited)" >&2
-        echo "" >&2
-        echo "   You provided: --max-iterations (with no number)" >&2
         exit 1
       fi
       if ! [[ "$2" =~ ^[0-9]+$ ]]; then
         echo "❌ Error: --max-iterations must be a positive integer or 0, got: $2" >&2
-        echo "" >&2
-        echo "   Valid examples:" >&2
-        echo "     --max-iterations 10" >&2
-        echo "     --max-iterations 50" >&2
-        echo "     --max-iterations 0  (unlimited)" >&2
-        echo "" >&2
-        echo "   Invalid: decimals (10.5), negative numbers (-5), text" >&2
         exit 1
       fi
       MAX_ITERATIONS="$2"
-      shift 2
-      ;;
-    --package)
-      if [[ -z "${2:-}" ]]; then
-        echo "❌ Error: --package requires a package name" >&2
-        exit 1
-      fi
-      PACKAGE_NAME="$2"
-      shift 2
-      ;;
-    --context)
-      if [[ -z "${2:-}" ]]; then
-        echo "❌ Error: --context requires a file path" >&2
-        exit 1
-      fi
-      CONTEXT_FILE="$2"
-      shift 2
-      ;;
-    --sub-package)
-      if [[ -z "${2:-}" ]]; then
-        echo "❌ Error: --sub-package requires a package name" >&2
-        exit 1
-      fi
-      SUB_PACKAGE_NAME="$2"
       shift 2
       ;;
     *)
@@ -108,52 +66,12 @@ HELP_EOF
   esac
 done
 
-# Validate required args
-if [[ -z "$CONTEXT_FILE" ]]; then
-  echo "❌ Error: --context is required" >&2
-  echo "   Run with --help for usage" >&2
-  exit 1
-fi
-if [[ -z "$PACKAGE_NAME" ]]; then
-  echo "❌ Error: --package is required" >&2
-  echo "   Run with --help for usage" >&2
-  exit 1
-fi
-if [[ -z "$SUB_PACKAGE_NAME" ]]; then
-  echo "❌ Error: --sub-package is required" >&2
-  echo "   Run with --help for usage" >&2
-  exit 1
-fi
-
-# Generate state body from decomp context via inner_ralph.py
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
-
-if [[ ! -f "$CONTEXT_FILE" ]]; then
-  echo "❌ Error: Context file not found: $CONTEXT_FILE" >&2
-  exit 1
-fi
-
 ITER_LIMIT="$MAX_ITERATIONS"
 if [[ "$ITER_LIMIT" -eq 0 ]]; then
   ITER_LIMIT=30
 fi
 
-if ! STATE_BODY=$(uv run python "$PLUGIN_ROOT/skills/decompose/scripts/inner_ralph.py" generate-state-body \
-  --context "$CONTEXT_FILE" \
-  --top-package "$PACKAGE_NAME" \
-  --sub-package "$SUB_PACKAGE_NAME" \
-  --max-iterations "$ITER_LIMIT") || [[ -z "$STATE_BODY" ]]; then
-  echo "❌ Error: Failed to generate state body from context" >&2
-  exit 1
-fi
-echo "━━━ Generated state body from decomp context ━━━"
-echo "  Top package: $PACKAGE_NAME"
-echo "  Sub package: $SUB_PACKAGE_NAME"
-echo "  Context file: $CONTEXT_FILE"
-echo "  Max iterations: $ITER_LIMIT"
-echo ""
-
-# Create state file for stop hook (markdown with YAML frontmatter)
+# Create state file with frontmatter and placeholder table
 mkdir -p .claude
 
 cat > .claude/inner-diy-loop.local.md <<EOF
@@ -165,32 +83,21 @@ completion_promise: "DONE"
 started_at: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 ---
 
-$STATE_BODY
+| Field | Value |
+|---|---|
+| top_package | PLACEHOLDER |
+| sub_package | PLACEHOLDER |
+| category | PLACEHOLDER |
+| strategy | PLACEHOLDER |
+| functions_to_replace | PLACEHOLDER |
+| reference_material | PLACEHOLDER |
+| acceptable_sub_dependencies | PLACEHOLDER |
+| max_iterations | $ITER_LIMIT |
 EOF
 
-# Output setup message
-cat <<EOF
-🔄 DIY loop activated in this session!
-
-Iteration: 1
-Max iterations: $(if [[ $MAX_ITERATIONS -gt 0 ]]; then echo "$MAX_ITERATIONS"; else echo "unlimited"; fi)
-Completion promise: DONE (ONLY output when TRUE - do not lie!)
-
-The stop hook is now active. When you try to exit, the SAME PROMPT will be
-fed back to you. You'll see your previous work in files, creating a
-self-referential loop where you iteratively improve on the same task.
-
-To monitor: head -10 .claude/inner-diy-loop.local.md
-
-⚠️  WARNING: This loop cannot be stopped manually! It will run infinitely
-    unless you set --max-iterations or the completion promise is met.
-
-🔄
-EOF
-
-echo ""
-echo "$STATE_BODY"
-
+echo "🔄 State file seeded: .claude/inner-diy-loop.local.md"
+echo "  Max iterations: $(if [[ $MAX_ITERATIONS -gt 0 ]]; then echo "$MAX_ITERATIONS"; else echo "unlimited"; fi)"
+echo "  Placeholders must be filled by the decompose skill (step 4)."
 echo ""
 echo "═══════════════════════════════════════════════════════════"
 echo "CRITICAL - DIY Loop Completion Promise"

@@ -72,15 +72,25 @@ mkdir -p diy_{sub_package}
 touch diy_{sub_package}/__init__.py
 ```
 
-b. Execute this setup script to initialize the state for the **decomp-implementer** agent:
+#### 4. Seed & populate state body
+
+a. Seed the state file with placeholder values:
 
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/scripts/activate-inner-diy-loop.sh" \
-    --context .claude/decomp_context.md \
-    --package {top_package} \
-    --sub-package {sub_package} \
-    --max-iterations 10 \
+"${CLAUDE_PLUGIN_ROOT}/scripts/activate-inner-diy-loop.sh" --max-iterations 10
 ```
+
+b. Read `.claude/decomp_context.md` and fill in the `PLACEHOLDER` values in `.claude/inner-diy-loop.local.md`:
+
+| Field | Where to get the value |
+|---|---|
+| top_package | `{top_package}` |
+| sub_package | `{sub_package}` |
+| category | from decomp_context |
+| strategy | from decomp_context |
+| functions_to_replace | comma-separated list from decomp_context, or `none identified` |
+| reference_material | from decomp_context, default: `.slash_diy/reference/{sub_package}/` |
+| acceptable_sub_dependencies | comma-separated list from decomp_context, or `none` |
 
 c. Use the **decomp-implementer** agent to implement the sub-package.
 
