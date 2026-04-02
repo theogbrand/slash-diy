@@ -133,6 +133,7 @@ def rewrite_sub_imports(args):
         content = f.read_text(errors="replace")
         new_content = re.sub(rf"\bfrom {sub_pkg}\b", f"from {target}", content)
         new_content = re.sub(rf"\bimport {sub_pkg}\b", f"import {target}", new_content)
+        new_content = re.sub(rf"\b{sub_pkg}\.", f"{target}.", new_content)
         if new_content != content:
             f.write_text(new_content)
             count += 1
