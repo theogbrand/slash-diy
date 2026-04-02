@@ -292,24 +292,22 @@ def _format_script_label(groups: tuple[str | None, ...]) -> str:
     """
     if len(groups) == 1:
         return groups[0] or ""
-    elif len(groups) == 2:
+    if len(groups) == 2:
         path_var, script_path = groups
         return f"${{{path_var}}}/{script_path}"
-    else:
-        path_var, script_path, subcommand = groups
-        label = f"${{{path_var}}}/{script_path}"
-        if subcommand:
-            label = f"{label} {subcommand}"
-        return label
+    path_var, script_path, subcommand = groups
+    label = f"${{{path_var}}}/{script_path}"
+    if subcommand:
+        label = f"{label} {subcommand}"
+    return label
 
 
 def _resolve_script_path(path_var: str, script_path: str, command_name: str) -> Path:
     """Resolve a script variable reference to an absolute path."""
     if path_var == "CLAUDE_PLUGIN_ROOT":
         return REPO_ROOT / script_path
-    else:
-        # CLAUDE_SKILL_DIR -> skills/<command_name>/
-        return SKILLS_DIR / command_name / script_path
+    # CLAUDE_SKILL_DIR -> skills/<command_name>/
+    return SKILLS_DIR / command_name / script_path
 
 
 # --- Shared lint checks ---
@@ -444,20 +442,19 @@ def lint_script_paths(filename: str, lines: list[str]) -> list[LintWarning]:
         if re.search(
             r"(?<!\{CLAUDE_PLUGIN_ROOT\}/)(?<!\{CLAUDE_SKILL_DIR\}/)scripts/\S+\.(py|sh)",
             line,
+        ) and (
+            "${CLAUDE_PLUGIN_ROOT}/scripts/" not in line
+            and "${CLAUDE_SKILL_DIR}/scripts/" not in line
         ):
-            if (
-                "${CLAUDE_PLUGIN_ROOT}/scripts/" not in line
-                and "${CLAUDE_SKILL_DIR}/scripts/" not in line
-            ):
-                warnings.append(
-                    LintWarning(
-                        LintRule.BARE_SCRIPT_PATH,
-                        filename,
-                        i,
-                        "Plugin scripts should use ${CLAUDE_PLUGIN_ROOT}/scripts/ or ${CLAUDE_SKILL_DIR}/scripts/, "
-                        f"not bare 'scripts/' paths. Found: {line.strip()}",
-                    )
+            warnings.append(
+                LintWarning(
+                    LintRule.BARE_SCRIPT_PATH,
+                    filename,
+                    i,
+                    "Plugin scripts should use ${CLAUDE_PLUGIN_ROOT}/scripts/ or ${CLAUDE_SKILL_DIR}/scripts/, "
+                    f"not bare 'scripts/' paths. Found: {line.strip()}",
                 )
+            )
     return warnings
 
 
@@ -648,7 +645,7 @@ def lint_command(
                 break
 
     # OL011: Loop back target must match the first step after Begin loop
-    for begin, back in zip(begin_loops, loop_backs):
+    for begin, back in zip(begin_loops, loop_backs, strict=False):
         first_step_after = STEP_HEADER_PATTERN.search(body, begin.end())
         if first_step_after:
             expected_target = int(first_step_after.group(1))

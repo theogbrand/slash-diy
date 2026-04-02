@@ -11,7 +11,6 @@ import json
 import re
 from pathlib import Path
 
-
 TEMPLATE_FILE = Path(__file__).parent.parent / "assets" / "inner_ralph_loop.md"
 
 # Fields recognized by the markdown parser (lowercase label → dict key).
@@ -34,6 +33,7 @@ def _parse_markdown_context(text: str) -> dict:
 
         # Check if this line starts a recognized field.
         matched_key = None
+        value = ""
         for label, key in _FIELD_HEADERS.items():
             if line.lower().startswith(label + ":"):
                 matched_key = key
@@ -81,7 +81,7 @@ def _parse_markdown_context(text: str) -> dict:
     return ctx
 
 
-def generate_prompt(args):
+def generate_prompt(args: argparse.Namespace) -> None:
     raw = Path(args.context).read_text()
     try:
         ctx = json.loads(raw)
@@ -116,7 +116,7 @@ def generate_prompt(args):
     print(prompt)
 
 
-def rewrite_sub_imports(args):
+def rewrite_sub_imports(args: argparse.Namespace) -> None:
     sub_pkg = args.sub_package.replace("-", "_")
     target = f"diy_{sub_pkg}"
     target_dir = Path(args.target_dir)
@@ -143,7 +143,7 @@ def rewrite_sub_imports(args):
     )
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Inner Ralph Loop utilities")
     sub = parser.add_subparsers(dest="command")
 

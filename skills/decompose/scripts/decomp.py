@@ -19,7 +19,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 QUEUE_FILE = Path(".claude/decomp-queue.json")
 
 
@@ -31,7 +30,7 @@ def ensure_queue_dir() -> None:
 def read_queue() -> dict:
     """Read queue file. Return empty state if file doesn't exist."""
     if QUEUE_FILE.exists():
-        with open(QUEUE_FILE) as f:
+        with QUEUE_FILE.open() as f:
             return json.load(f)
     return {"pending": []}
 
@@ -39,7 +38,7 @@ def read_queue() -> dict:
 def write_queue(queue: dict) -> None:
     """Write queue file."""
     ensure_queue_dir()
-    with open(QUEUE_FILE, "w") as f:
+    with QUEUE_FILE.open("w") as f:
         json.dump(queue, f, indent=2)
 
 

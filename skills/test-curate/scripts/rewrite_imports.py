@@ -10,7 +10,7 @@ import re
 from pathlib import Path
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Rewrite imports in test files")
     parser.add_argument("--package", required=True, help="Package name to replace")
     args = parser.parse_args()

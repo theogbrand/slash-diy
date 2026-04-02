@@ -14,14 +14,14 @@ import sys
 from pathlib import Path
 
 
-def find_test_dir():
-    for d in sorted(Path(".").glob("diy_*/tests/generated")):
+def find_test_dir() -> str:
+    for d in sorted(Path().glob("diy_*/tests/generated")):
         if d.is_dir():
             return str(d)
     return "tests"
 
 
-def main():
+def main() -> None:
     test_dir = find_test_dir()
     result = subprocess.run(
         [sys.executable, "-m", "pytest", test_dir, "-v", "--tb=short"],

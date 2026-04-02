@@ -83,7 +83,7 @@ def copy_raw_tests(repo_dir: Path) -> int:
     return count
 
 
-def _skip_missing(_src: str, _dst: str):
+def _skip_missing(_src: str, _dst: str) -> None:
     """shutil copy_function that silently skips files missing on disk (sparse checkout stubs)."""
     src_path = Path(_src)
     if not src_path.exists():
@@ -91,7 +91,7 @@ def _skip_missing(_src: str, _dst: str):
     shutil.copy2(_src, _dst)
 
 
-def copy_reference(repo_dir: Path, package_name: str):
+def copy_reference(repo_dir: Path, package_name: str) -> None:
     """Copy original source code for the agent to study."""
     dest = REFERENCE_DIR / package_name
     if dest.exists():
@@ -102,7 +102,7 @@ def copy_reference(repo_dir: Path, package_name: str):
         shutil.copytree(src, dest, copy_function=_skip_missing)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Prepare DIY environment")
     parser.add_argument("--url", required=True, help="GitHub repo URL to clone")
     args = parser.parse_args()
