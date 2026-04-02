@@ -50,10 +50,10 @@ Complete these steps IN ORDER before entering the loop.
 
 #### a. Verify baseline
 
-Run Level 0 tests with the REAL `{sub_package}` still installed:
+Run the top-level generated tests with the REAL `{sub_package}` still installed:
 
 ```bash
-uv run pytest diy_{top_package}/tests/ -v --tb=short 2>&1
+uv run pytest diy_{top_package}/tests/generated/ -v --tb=short 2>&1
 ```
 
 **All tests MUST pass.** If any fail, STOP — the baseline is broken and must be fixed before proceeding.
