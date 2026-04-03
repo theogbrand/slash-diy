@@ -8,6 +8,8 @@ disable-model-invocation: true
 
 # Yoink
 
+> **Python only.** YOINK currently only supports Python packages. If the target is clearly not a Python package, inform the user and exit immediately.
+
 Run the full yoink decomposition pipeline by invoking skills in sequence:
 
 ### 1. Setup

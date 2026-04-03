@@ -16,3 +16,5 @@ Execute the setup script to scaffold the project:
 ```
 
 IMPORTANT: After the setup script runs, print its full output to the user verbatim.
+
+CRITICAL: After setup completes, check the cloned repo for a Python package (e.g., `pyproject.toml`, `setup.py`, or `setup.cfg` in `.yoink/reference/`). If none are found, inform the user that YOINK currently only supports Python packages and exit. You MUST NOT proceed to subsequent phases.

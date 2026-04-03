@@ -110,6 +110,10 @@ Phase 3: Dependency decomposition. Seeds the queue with the target package and i
 - Packages with deep platform-specific bindings
 - Cryptographic implementations (use audited libraries)
 
+## Limitations
+
+- YOINK currently only supports re-implementing Python packages, but we plan to support JavaScript packages next.
+
 ## How to use this in development or contribute?
 
 ```bash
