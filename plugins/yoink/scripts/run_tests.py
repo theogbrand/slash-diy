@@ -59,14 +59,21 @@ def main() -> None:
             print(result.stdout)
             print(result.stderr)
 
-        # Parse structured results from JUnit XML instead of scraping output
+        # Parse structured results from JUnit XML instead of scraping output.
+        # pytest wraps <testsuite> inside a <testsuites> root, so we need to
+        # find the actual <testsuite> element(s) and sum their attributes.
         passed = failed = errors = 0
         tree = ET.parse(junit_xml_path)
-        testsuite = tree.getroot()
-        # <testsuite> attributes: tests, errors, failures, skipped
-        total_tests = int(testsuite.attrib.get("tests", 0))
-        failed = int(testsuite.attrib.get("failures", 0))
-        errors = int(testsuite.attrib.get("errors", 0))
+        root = tree.getroot()
+
+        testsuite_elements = (
+            root.findall("testsuite") if root.tag == "testsuites" else [root]
+        )
+        total_tests = 0
+        for testsuite in testsuite_elements:
+            total_tests += int(testsuite.attrib.get("tests", 0))
+            failed += int(testsuite.attrib.get("failures", 0))
+            errors += int(testsuite.attrib.get("errors", 0))
         passed = total_tests - failed - errors
 
     total = passed + failed + errors
