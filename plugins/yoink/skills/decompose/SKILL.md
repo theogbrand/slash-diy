@@ -53,7 +53,7 @@ Complete these steps IN ORDER before entering the loop.
 Run the top-level generated tests with the REAL `{sub_package}` still installed:
 
 ```bash
-uv run pytest yoink_{top_package}/tests/generated/ -v --tb=short 2>&1
+uv run ${CLAUDE_PLUGIN_ROOT}/scripts/run_tests.py --project-dir . 2>&1
 ```
 
 **All tests MUST pass.** If any fail, STOP — the baseline is broken and must be fixed before proceeding.

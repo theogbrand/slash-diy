@@ -40,7 +40,7 @@ Pass it the package name and target function.
 Run the generated tests against the installed real library:
 
 ```bash
-uv run pytest yoink_<PACKAGE>/tests/generated/ -v --tb=short 2>&1
+uv run ${CLAUDE_PLUGIN_ROOT}/scripts/run_tests.py --project-dir . 2>&1
 ```
 
 **Prune failures:**
@@ -70,8 +70,7 @@ uv run ${CLAUDE_SKILL_DIR}/scripts/rewrite_imports.py --package <PACKAGE>
 Run the test suite against the empty `yoink_<package>/` to confirm tests fail:
 
 ```bash
-uv run ${CLAUDE_PLUGIN_ROOT}/scripts/run_tests.py --project-dir . > run.log 2>&1
-grep "^score:" run.log
+uv run ${CLAUDE_PLUGIN_ROOT}/scripts/run_tests.py --project-dir . --summary-only
 ```
 
 Score should be ~0.0 (tests should fail against empty `yoink_<package>/`). If score > 0,

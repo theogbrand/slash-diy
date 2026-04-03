@@ -39,7 +39,7 @@ Repeat steps 1–3 until all tests pass or you hit the max iteration limit.
 - Read current `yoink_{sub_package}/` source files
 - Study the failing tests to understand what's needed:
   ```
-  uv run pytest yoink_{top_package}/tests/generated/ -x --tb=short 2>&1
+  uv run ${CLAUDE_PLUGIN_ROOT}/scripts/run_tests.py --project-dir . 2>&1
   ```
 
 ### 2. Implement
@@ -59,8 +59,7 @@ Run the test suite and check score:
 
 ```
 uv run ${CLAUDE_PLUGIN_ROOT}/scripts/run_tests.py --project-dir . > .claude/decomp-implementer-loop/{sub_package}-iteration-<N>-run.log 2>&1
-grep "^score:" .claude/decomp-implementer-loop/{sub_package}-iteration-<N>-run.log >> .claude/decomp-implementer-loop/{sub_package}-scores.log
-grep -E "^(score|passed|failed):" .claude/decomp-implementer-loop/{sub_package}-iteration-<N>-run.log
+grep -A5 "^--- Results ---" .claude/decomp-implementer-loop/{sub_package}-iteration-<N>-run.log | tee -a .claude/decomp-implementer-loop/{sub_package}-scores.log
 ```
 
 - If **score == 1.000000** then **keep commit, then emit `<promise>DONE</promise>`**.

@@ -4,14 +4,15 @@ Run the extracted test suite against yoink_<package>/ and compute score.
 Auto-detects the test directory by looking for yoink_*/tests/.
 
 Usage:
-    uv run run_tests.py --project-dir /path/to/project > run.log 2>&1
-    grep "^score:" run.log
+    uv run run_tests.py --project-dir /path/to/project
+    uv run run_tests.py --project-dir /path/to/project --summary-only
 """
 
 import argparse
-import re
 import subprocess
 import sys
+import tempfile
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 
@@ -25,41 +26,48 @@ def find_test_dir(project_dir: Path) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--project-dir", type=Path, default=Path.cwd())
+    parser.add_argument(
+        "--summary-only",
+        action="store_true",
+        help="Suppress pytest output, print only the results summary",
+    )
     args = parser.parse_args()
     project_dir = args.project_dir.resolve()
 
     test_dir = find_test_dir(project_dir)
-    result = subprocess.run(
-        [sys.executable, "-m", "pytest", test_dir, "-v", "--tb=short"],
-        capture_output=True,
-        text=True,
-        timeout=300,
-        cwd=project_dir,
-    )
 
-    output = result.stdout + result.stderr
-    print(result.stdout)
-    if result.stderr:
-        print(result.stderr)
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        junit_xml_path = Path(tmp_dir) / "results.xml"
 
-    # Count individual test results from verbose output lines
-    # Format: "path/test_file.py::test_name PASSED" / "FAILED" / "ERROR"
-    passed = failed = errors = 0
-    for line in output.splitlines():
-        stripped = line.strip()
-        if " PASSED" in stripped:
-            passed += 1
-        elif " FAILED" in stripped:
-            failed += 1
-        elif " ERROR" in stripped:
-            errors += 1
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "pytest",
+                test_dir,
+                "-v",
+                "--tb=short",
+                f"--junitxml={junit_xml_path}",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=300,
+            cwd=project_dir,
+        )
 
-    # Also count collection errors (files that couldn't even be imported)
-    # These show as "ERROR path/file.py" in the summary section
-    collection_errors = 0
-    m = re.search(r"(\d+) error", output)
-    if m:
-        collection_errors = int(m.group(1)) - errors
+        if not args.summary_only:
+            print(result.stdout)
+            print(result.stderr)
+
+        # Parse structured results from JUnit XML instead of scraping output
+        passed = failed = errors = 0
+        tree = ET.parse(junit_xml_path)
+        testsuite = tree.getroot()
+        # <testsuite> attributes: tests, errors, failures, skipped
+        total_tests = int(testsuite.attrib.get("tests", 0))
+        failed = int(testsuite.attrib.get("failures", 0))
+        errors = int(testsuite.attrib.get("errors", 0))
+        passed = total_tests - failed - errors
 
     total = passed + failed + errors
     score = passed / total if total > 0 else 0.0
@@ -70,8 +78,6 @@ def main() -> None:
     print(f"failed:         {failed}")
     print(f"errors:         {errors}")
     print(f"total:          {total}")
-    if collection_errors > 0:
-        print(f"collection_errors: {collection_errors} (files that failed to import)")
 
 
 if __name__ == "__main__":
