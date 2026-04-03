@@ -46,7 +46,7 @@ Repeat steps 1–3 until all tests pass or you hit the max iteration limit.
 
 - Modify files in `yoink_{sub_package}/` **ONLY**.
 - Focus on the specific failures identified in step 1.
-- Before moving to validation, fix all lint and type errors:
+- Fix all lint and type errors and warnings:
   ```
   uv run ruff check --fix yoink_{sub_package}/
   uv run ruff format yoink_{sub_package}/
@@ -59,7 +59,7 @@ Run the test suite and check score:
 
 ```
 uv run ${CLAUDE_PLUGIN_ROOT}/scripts/run_tests.py --project-dir . > .claude/decomp-implementer-loop/{sub_package}-iteration-<N>-run.log 2>&1
-grep -A5 "^--- Results ---" .claude/decomp-implementer-loop/{sub_package}-iteration-<N>-run.log | tee -a .claude/decomp-implementer-loop/{sub_package}-scores.log
+grep "^score:" .claude/decomp-implementer-loop/{sub_package}-iteration-<N>-run.log | tee -a .claude/decomp-implementer-loop/{sub_package}-scores.log
 ```
 
 - If **score == 1.000000** then **keep commit, then emit `<promise>DONE</promise>`**.

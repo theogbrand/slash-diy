@@ -40,9 +40,9 @@ plugins/yoink/
 │
 ├── hooks/                          # Event hooks for loop control
 │   ├── hooks.json                  # Hook event configuration
+│   ├── stop-hook.sh                # Prevents exit during Ralph Loop, feeds output back as input
 │   ├── subagent-start-hook.sh
-│   ├── subagent-stop-hook.sh
-│   └── inner-yoink-loop-stop-hook.sh  # Prevents exit, feeds output back as input
+│   └── subagent-stop-hook.sh
 │
 └── scripts/
     └── run_tests.py                # Run test suite, compute pass/fail score
@@ -64,6 +64,7 @@ scripts/
 ├── .claude/
 │   ├── decomp-queue.json           # Pending dependencies to evaluate
 │   ├── decomp_context.md           # Evaluator decision output
+│   ├── decomp-implementer-loop/    # Per-sub-package iteration logs and score history
 │   └── inner-yoink-loop.local.md   # Ralph loop state (YAML frontmatter + markdown table)
 └── pyproject.toml                  # Generated project config
 ```
@@ -151,7 +152,7 @@ Hooks intercept Claude Code lifecycle events to control execution flow.
 
 | Hook | Event | Purpose |
 |------|-------|---------|
-| `inner-yoink-loop-stop-hook.sh` | Stop | Prevents session exit during active Ralph Loop; feeds last output back as input to continue iteration |
+| `stop-hook.sh` | Stop | Prevents session exit during active Ralph Loop; feeds last output back as input to continue iteration |
 | `subagent-start-hook.sh` | SubagentStart | Logging |
 | `subagent-stop-hook.sh` | SubagentStop | Logging |
 
@@ -163,7 +164,7 @@ Dependencies are tracked in `.claude/decomp-queue.json` as a FIFO queue. Each de
 
 ### Ralph Loop
 
-The inner implementation loop uses a stop hook (`inner-yoink-loop-stop-hook.sh`) to intercept session exit attempts. When the hook detects an active loop, it feeds the last assistant message back as input, effectively creating an iterative plan-implement-validate cycle. Loop state is tracked in `.claude/inner-yoink-loop.local.md` with YAML frontmatter (`iteration`, `max_iterations`, `completion_promise`). The agent signals completion by emitting `<promise>DONE</promise>` or `<promise>MAX_ITERATIONS_REACHED</promise>`.
+The inner implementation loop uses a stop hook (`stop-hook.sh`) to intercept session exit attempts. When the hook detects an active loop, it feeds the last assistant message back as input, effectively creating an iterative plan-implement-validate cycle. Loop state is tracked in `.claude/inner-yoink-loop.local.md` with YAML frontmatter (`iteration`, `max_iterations`, `completion_promise`). The agent signals completion by emitting `<promise>DONE</promise>` or `<promise>MAX_ITERATIONS_REACHED</promise>`.
 
 ### Import Rewriting
 
