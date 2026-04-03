@@ -34,17 +34,24 @@ have full visibility into, over opaque third-party libraries.
 
 We are making this capability accessible to anyone.
 
-## Quick Start
+## Getting Started
+
+### Install
+
+Add the yoink marketplace and install the plugin from within Claude Code:
 
 ```bash
-mkdir ../litellm-lite
-cp ./examples/litellm-sample.md ../litellm-lite/
-cd ../litellm-lite
-claude --plugin-dir ../yoink/plugins/yoink
+/plugin marketplace add theogbrand/yoink
+/plugin install yoink@yoink-marketplace
+/reload-plugins
 ```
 
+### Usage
+
+Navigate to any project and run `/yoink`:
+
 ```bash
-/yoink "Replace the usage of litellm in @litellm-sample.md with my own implementation" --url "https://github.com/BerriAI/litellm"
+/yoink "Replace usage of litellm with my own implementation" --url "https://github.com/BerriAI/litellm"
 ```
 
 ## Skills
@@ -129,10 +136,26 @@ Phase 3: Dependency decomposition. Seeds the queue with the target package and i
 
 - YOINK currently only supports re-implementing Python packages, but we plan to support JavaScript packages next.
 
-## How to use this in development or contribute?
+## Development
+
+To run yoink from a local clone instead of the marketplace:
 
 ```bash
-claude --plugin-dir .
+claude --plugin-dir ./plugins/yoink
+```
+
+An example prompt is included in `examples/litellm-sample.md` to try locally:
+
+```bash
+git clone https://github.com/theogbrand/yoink.git
+mkdir litellm-lite
+cp ./yoink/examples/litellm-sample.md ./litellm-lite/
+cd litellm-lite
+claude --plugin-dir ../yoink/plugins/yoink
+```
+
+```bash
+/yoink "Replace the usage of litellm in @litellm-sample.md with my own implementation" --url "https://github.com/BerriAI/litellm"
 ```
 
 ### Orchestration Linter
