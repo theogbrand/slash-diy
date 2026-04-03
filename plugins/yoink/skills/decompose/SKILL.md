@@ -8,7 +8,7 @@ argument-hint: "--package PACKAGE_NAME"
 
 > **Do not invoke this skill unless explicitly requested.** It is called by `/yoink` or run standalone by the user.
 
-**Prerequisite:** `/test-curate` must have been completed first.
+**Prerequisite:** `/curate-tests` must have been completed first.
 
 Seed the decomposition queue with the target package:
 

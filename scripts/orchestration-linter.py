@@ -75,7 +75,7 @@ SKILLS_DIR = PLUGIN_DIR / "skills"
 AGENTS_DIR = PLUGIN_DIR / "agents"
 OUTPUT_FILE = REPO_ROOT / "ORCHESTRATION_FLOW.md"
 
-ORCHESTRATOR_COMMANDS = ["setup", "test-curate", "decompose", "yoink", "yoink-loop"]
+ORCHESTRATOR_COMMANDS = ["setup", "curate-tests", "decompose", "yoink", "yoink-loop"]
 
 BEGIN_LOOP_PATTERN = re.compile(r"^\*\*Begin loop\.\*\*", re.MULTILINE)
 LOOP_BACK_PATTERN = re.compile(r"^\*\*Loop back to step (\d+)\.\*\*", re.MULTILINE)

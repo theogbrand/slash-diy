@@ -2,7 +2,7 @@
 
 ## Overview
 
-Yoink is a Claude Code plugin that decomposes third-party dependencies into local, zero-dependency replacements. It clones a target library's source, curates tests from it, then iteratively replaces each dependency with a minimal local implementation -- verified against the original's test expectations.
+Yoink is an AI agent, built as a Claude Code plugin, that decomposes third-party dependencies into local, zero-dependency replacements. It clones a target library's source, curates tests from it, then iteratively replaces each dependency with a minimal local implementation -- verified against the original's test expectations.
 
 The pipeline runs in three sequential phases: **Setup (Phase 1)**, **Test Curation (Phase 2)**, and **Decomposition (Phase 3)**.
 
@@ -14,14 +14,14 @@ plugins/yoink/
 │   └── plugin.json                 # Plugin metadata (name, version, keywords)
 │
 ├── skills/                         # User-facing orchestrated commands
-│   ├── yoink/SKILL.md              # Main entry: setup -> test-curate -> decompose
+│   ├── yoink/SKILL.md              # Main entry: setup -> curate-tests -> decompose
 │   ├── setup/                      # Clone repo, install library, scaffold project
 │   │   ├── SKILL.md
 │   │   ├── scripts/
 │   │   │   ├── setup.sh            # Clones repo, creates pyproject.toml, installs lib
 │   │   │   └── prepare.py          # Clones target repo to .yoink/reference/
 │   │   └── assets/                 # Template files for scaffolding
-│   ├── test-curate/                # Phase 2: discover/generate tests
+│   ├── curate-tests/                # Phase 2: discover/generate tests
 │   │   ├── SKILL.md
 │   │   └── scripts/
 │   │       └── rewrite_imports.py  # Rewrite imports from <pkg> to yoink_<pkg>
@@ -82,7 +82,7 @@ scripts/
 
 ### Phase 2: Test Curation
 
-`/test-curate "<prompt>" --package <pkg>`
+`/curate-tests "<prompt>" --package <pkg>`
 
 1. **test-discoverer** agent searches `.yoink/reference/` for existing tests relevant to the user's prompt
 2. **test-generator** agent studies the reference implementation and writes comprehensive pytest tests
@@ -116,9 +116,9 @@ Skills are the user-facing entry points. Each skill's `SKILL.md` defines its int
 
 | Skill | Purpose |
 |-------|---------|
-| `/yoink` | Full pipeline orchestrator (setup + test-curate + decompose) |
+| `/yoink` | Full pipeline orchestrator (setup + curate-tests + decompose) |
 | `/setup` | Project scaffolding |
-| `/test-curate` | Test discovery and generation |
+| `/curate-tests` | Test discovery and generation |
 | `/decompose` | Dependency decomposition loop |
 
 ### Agents

@@ -1,24 +1,27 @@
 # yoink
 
-A plugin to clone dependencies you don't trust. No more supply chain attacks.
+An AI agent that removes complex dependencies by reimplementing only what you need.
 
 ## What is yoink?
 
-They say don't reinvent the wheel. But what if you could just "yoink" the exact
-functionality you need out of a library, strip away everything you don't, and
-own the result? That's yoink, letting you reinvent the wheel by keeping the
-good bits and rebuilding on your own terms to reduce external dependencies.
+yoink is an AI agent, built as a Claude Code plugin, that decomposes third-party
+dependencies into internal replacements. Instead of importing a 50k-line SDK
+for three function calls, point yoink at the package, describe what you need,
+and it reimplements only the functionality you actually use, verified against
+the expectations of the original library's tests.
 
-### How does it work?
+### Why now?
 
-yoink decomposes third-party functionality into local replacements. Point it
-at a package, describe what you need, and it will curate tests from the original
-library, iteratively decompose dependencies, and implement each in a ralph loop
-until you have a local implementation.
+AI agents are getting good enough to own code end-to-end, and with supply chain
+attacks accelerating, fewer dependencies means less attack surface.
 
-Instead of importing a 50k-line SDK for three function calls, yoink those three
-functions into your own codebase. Verified against the original's own test
-expectations, but free from the dependency chain that came with it.
+Andrej Karpathy [called for](https://x.com/karpathy/status/2036487306585268612)
+re-evaluating the belief that "more dependencies are better." OpenAI's [harness
+engineering](https://openai.com/index/harness-engineering/) article echoed this:
+agents reason better from reimplemented functionality they have full visibility
+into, over opaque third-party libraries. 
+
+We are making this capability accessible to anyone.
 
 ## Quick Start
 
@@ -34,6 +37,14 @@ claude --plugin-dir ../yoink/plugins/yoink
 ```
 
 ## Skills
+
+yoink runs three skills sequentially:
+
+1. **`/setup`** clones the target repo and scaffolds a local replacement package.
+2. **`/curate-tests`** studies the reference implementation and generates new tests, verified against the expectations of the original test suite.
+3. **`/decompose`** determines dependencies to keep or decompose, based on a set of principles we defined, such as "keeping foundational primitives regardless of how narrow they are used".
+
+The `/yoink` command runs all three in sequence.
 
 ### /yoink
 
@@ -64,13 +75,13 @@ Scaffold the project: clone the target repo and install the real library for tes
 - `--url <github_url>` - GitHub repository URL to clone (required)
 - `--package <package_name>` - Override the package name (defaults to the repo name from the URL)
 
-### /test-curate
+### /curate-tests
 
 Phase 2: Generate and discover tests, then validate them against the real library. Requires `/setup` to have been run first.
 
 **Usage:**
 ```bash
-/test-curate "I want to replace the usage of litellm in @sample.md with my own implementation" --package litellm
+/curate-tests "I want to replace the usage of litellm in @sample.md with my own implementation" --package litellm
 ```
 
 **Options:**
@@ -78,7 +89,7 @@ Phase 2: Generate and discover tests, then validate them against the real librar
 
 ### /decompose
 
-Phase 3: Dependency decomposition. Seeds the queue with the target package and iteratively decomposes each dependency. Requires `/test-curate` to have been completed first.
+Phase 3: Dependency decomposition. Seeds the queue with the target package and iteratively decomposes each dependency. Requires `/curate-tests` to have been completed first.
 
 **Usage:**
 ```bash

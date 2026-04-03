@@ -1,5 +1,5 @@
 ---
-name: test-curate
+name: curate-tests
 description: "Phase 2: Generate and discover tests, validate against real library. Only invoke when explicitly requested by the user or by the yoink orchestrator."
 argument-hint: "PROMPT --package PACKAGE_NAME"
 ---
