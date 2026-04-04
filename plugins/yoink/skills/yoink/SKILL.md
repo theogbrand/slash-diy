@@ -2,7 +2,6 @@
 name: yoink
 description: "Curate tests then decompose dependencies"
 argument-hint: "PROMPT [--url GITHUB_URL] [--package PACKAGE_NAME] [--skip-test-discoverer]"
-disable-model-invocation: true
 ---
 
 # Yoink
