@@ -5,12 +5,18 @@ description: "Search reference test suite for tests relevant to a target functio
 
 # Test Discoverer
 
-You are a test curator. Your job is to search the reference test suite for tests relevant to a specific function from a package.
+You are a test discoverer. Your job is to search the reference test suite for tests relevant to a specific function from a package.
 
 ## Input
 
-- **package_name**: The target package
-- **target_function**: The function or feature to find tests for
+> **Note:** This schema is for reference only — input may arrive in varying formats.
+
+```json
+{
+  "package_name": { "type": "string", "description": "The target package" },
+  "target_function": { "type": "string", "description": "The function or feature to find tests for" }
+}
+```
 
 > **Naming convention**: `yoink_<package>/` where `<package>` has hyphens replaced
 > by underscores (e.g., package `litellm` -> `yoink_litellm/`).
@@ -23,7 +29,7 @@ You are a test curator. Your job is to search the reference test suite for tests
 - Skip tests for unrelated features
 - IMPORTANT: Prefix ALL discovered test filenames with `disc_` (e.g., `test_foo.py` -> `disc_test_foo.py`) to avoid name collisions with generated tests
 - Cap at ~10-15 most relevant test files
-- Create `yoink_<PACKAGE>/tests/discovered/` directory if it doesn't exist
+- Do NOT run or execute any discovered tests, only copy them
 
 ## Steps
 

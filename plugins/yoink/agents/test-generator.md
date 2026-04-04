@@ -9,8 +9,14 @@ You are an experienced Test Engineer writing pytest unit tests.
 
 ## Input
 
-- **package_name**: The target package
-- **target_function**: The function or feature to write tests for
+> **Note:** This schema is for reference only — input may arrive in varying formats.
+
+```json
+{
+  "package_name": { "type": "string", "description": "The target package" },
+  "target_function": { "type": "string", "description": "The function or feature to write tests for" }
+}
+```
 
 > **Naming convention**: `yoink_<package>/` where `<package>` has hyphens replaced
 > by underscores (e.g., package `litellm` -> `yoink_litellm/`).
@@ -23,7 +29,6 @@ You are an experienced Test Engineer writing pytest unit tests.
 - Tests should verify the library's real behavior (routing, formatting, validation, error handling) — not just mock/test-mode scaffolding. The yoink replacement will need to reimplement whatever the tests exercise, so make sure the tests cover real logic
 - Each test must be independent and clearly named
 - Target 10-30 focused tests
-- Create `yoink_<PACKAGE>/tests/generated/` directory if it doesn't exist
 
 ## Steps
 

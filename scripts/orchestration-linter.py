@@ -20,13 +20,13 @@ Validates these conventions in agents/*.md:
   Frontmatter:    name, description required (shared with skills)
   Conditionals:   - If **condition** then **action**. (shared with skills)
   Scripts:        ${CLAUDE_PLUGIN_ROOT}/ or ${CLAUDE_SKILL_DIR}/ prefix (shared with skills)
-  Input:          ## Input section with - **snake_case_key**: description parameters
+  Input:          ## Input section with a JSON Schema code block (reference-only note required)
   Output:         ## Output section with a JSON Schema code block
 
-  Input uses free-form bullet parameters (not JSON Schema) because the
-  orchestrator may pass input in varying formats and agents should be resilient
-  to that. Output uses JSON Schema because agents control their own output and
-  a standardized structure makes downstream parsing reliable.
+  Input and Output both use JSON Schema code blocks for field definitions.
+  Input includes a "reference only" note because the orchestrator may pass
+  input in varying formats. Output is authoritative since agents control
+  their own output.
 
 Rules (grouped by domain):
 
@@ -57,7 +57,7 @@ Rules (grouped by domain):
   OL402  Malformed YAML frontmatter
   OL403  Agent missing ## Input section
   OL404  Agent missing ## Output section
-  OL405  Agent Input parameter not in standard bullet format
+  OL405  Agent Input missing JSON Schema or reference-only note
   OL406  Agent Output missing JSON Schema (```json block with type+description per field)
 
   Directory (OL5xx):
@@ -260,8 +260,9 @@ class LineRule:
     exclude: re.Pattern[str] | None = None
 
 
-# Convention: - **snake_case_key**: Description
-AGENT_PARAM_PATTERN = re.compile(r"^[-*]\s+\*\*(\w+)\*\*:\s+\S", re.MULTILINE)
+INPUT_REFERENCE_NOTE_PATTERN = re.compile(
+    r">\s+\*\*Note:\*\*.*schema.*reference only", re.IGNORECASE
+)
 
 FRONTMATTER_PATTERN = re.compile(r"^---\n(.*?)^---\n", re.DOTALL | re.MULTILINE)
 
@@ -327,8 +328,24 @@ def _extract_section_text(content: str, section_name: str) -> str | None:
 
 
 def _extract_param_keys(section_text: str) -> list[str]:
-    """Extract **key** names from bullet lines in a section."""
-    return AGENT_PARAM_PATTERN.findall(section_text)
+    """Extract top-level input field names from an Input JSON Schema block."""
+    json_block_match = re.search(r"```json\n(.*?)```", section_text, re.DOTALL)
+    if json_block_match is None:
+        return []
+
+    try:
+        parsed_input_schema = json.loads(json_block_match.group(1))
+    except json.JSONDecodeError:
+        return []
+
+    if not isinstance(parsed_input_schema, dict):
+        return []
+
+    return [
+        field_name
+        for field_name, field_schema in parsed_input_schema.items()
+        if isinstance(field_schema, dict)
+    ]
 
 
 def _extract_output_schema_keys(output_section_text: str) -> list[str]:
@@ -610,6 +627,8 @@ def lint_skill_directory(skill_dir: Path) -> list[LintWarning]:
     scripts_dir = skill_dir / "scripts"
     if scripts_dir.exists():
         for file_path in sorted(scripts_dir.rglob("*")):
+            if "__pycache__" in file_path.parts:
+                continue
             if file_path.is_file() and file_path.suffix not in EXECUTABLE_EXTENSIONS:
                 warnings.append(
                     LintWarning(
@@ -819,6 +838,120 @@ JSON_CODE_BLOCK_PATTERN = re.compile(r"```json\n(.*?)```", re.DOTALL)
 JSON_SCHEMA_REQUIRED_KEYS = {"type", "description"}
 
 
+def _lint_json_schema_fields(
+    filename: str,
+    rule: LintRule,
+    section_line: int,
+    section_label: str,
+    json_blocks: list[str],
+) -> list[LintWarning]:
+    """Shared validation: each top-level key must have 'type' and 'description'."""
+    warnings: list[LintWarning] = []
+
+    for block in json_blocks:
+        try:
+            parsed = json.loads(block)
+        except json.JSONDecodeError as exc:
+            warnings.append(
+                LintWarning(
+                    rule,
+                    filename,
+                    section_line,
+                    f"{section_label} JSON code block is not valid JSON: {exc}",
+                )
+            )
+            continue
+
+        if not isinstance(parsed, dict):
+            warnings.append(
+                LintWarning(
+                    rule,
+                    filename,
+                    section_line,
+                    f"{section_label} JSON Schema must be an object with field definitions.",
+                )
+            )
+            continue
+
+        for key, value in parsed.items():
+            if not isinstance(value, dict):
+                warnings.append(
+                    LintWarning(
+                        rule,
+                        filename,
+                        section_line,
+                        f"{section_label} field '{key}' must be a JSON Schema property "
+                        f"(object with 'type' and 'description'), got {type(value).__name__}.",
+                    )
+                )
+                continue
+            missing = JSON_SCHEMA_REQUIRED_KEYS - value.keys()
+            if missing:
+                warnings.append(
+                    LintWarning(
+                        rule,
+                        filename,
+                        section_line,
+                        f"{section_label} field '{key}' is missing required JSON Schema "
+                        f"key(s): {', '.join(sorted(missing))}.",
+                    )
+                )
+
+    return warnings
+
+
+def _lint_input_json_schema(
+    filename: str, input_text: str, file_lines: list[str]
+) -> list[LintWarning]:
+    """OL405: Validate that the Input section contains a valid JSON Schema code block
+    and a reference-only note."""
+    warnings: list[LintWarning] = []
+    input_section_line = next(
+        (
+            i
+            for i, line in enumerate(file_lines, 1)
+            if re.match(r"^##\s+Input\s*$", line)
+        ),
+        0,
+    )
+
+    if not INPUT_REFERENCE_NOTE_PATTERN.search(input_text):
+        warnings.append(
+            LintWarning(
+                LintRule.AGENT_PARAM_FORMAT,
+                filename,
+                input_section_line,
+                "Input section must contain a reference-only note "
+                "(e.g., '> **Note:** This schema is for reference only — "
+                "input may arrive in varying formats.').",
+            )
+        )
+
+    json_blocks = JSON_CODE_BLOCK_PATTERN.findall(input_text)
+    if not json_blocks:
+        warnings.append(
+            LintWarning(
+                LintRule.AGENT_PARAM_FORMAT,
+                filename,
+                input_section_line,
+                "Input section must contain a ```json code block with a JSON Schema "
+                "defining each input field (each key needs 'type' and 'description').",
+            )
+        )
+        return warnings
+
+    warnings.extend(
+        _lint_json_schema_fields(
+            filename,
+            LintRule.AGENT_PARAM_FORMAT,
+            input_section_line,
+            "Input",
+            json_blocks,
+        )
+    )
+    return warnings
+
+
 def _lint_output_json_schema(
     filename: str, output_text: str, file_lines: list[str]
 ) -> list[LintWarning]:
@@ -850,55 +983,15 @@ def _lint_output_json_schema(
         )
         return warnings
 
-    for block in json_blocks:
-        try:
-            parsed = json.loads(block)
-        except json.JSONDecodeError as exc:
-            warnings.append(
-                LintWarning(
-                    LintRule.AGENT_OUTPUT_NOT_JSON_SCHEMA,
-                    filename,
-                    output_section_line,
-                    f"Output JSON code block is not valid JSON: {exc}",
-                )
-            )
-            continue
-
-        if not isinstance(parsed, dict):
-            warnings.append(
-                LintWarning(
-                    LintRule.AGENT_OUTPUT_NOT_JSON_SCHEMA,
-                    filename,
-                    output_section_line,
-                    "Output JSON Schema must be an object with field definitions.",
-                )
-            )
-            continue
-
-        for key, value in parsed.items():
-            if not isinstance(value, dict):
-                warnings.append(
-                    LintWarning(
-                        LintRule.AGENT_OUTPUT_NOT_JSON_SCHEMA,
-                        filename,
-                        output_section_line,
-                        f"Output field '{key}' must be a JSON Schema property "
-                        f"(object with 'type' and 'description'), got {type(value).__name__}.",
-                    )
-                )
-                continue
-            missing = JSON_SCHEMA_REQUIRED_KEYS - value.keys()
-            if missing:
-                warnings.append(
-                    LintWarning(
-                        LintRule.AGENT_OUTPUT_NOT_JSON_SCHEMA,
-                        filename,
-                        output_section_line,
-                        f"Output field '{key}' is missing required JSON Schema "
-                        f"key(s): {', '.join(sorted(missing))}.",
-                    )
-                )
-
+    warnings.extend(
+        _lint_json_schema_fields(
+            filename,
+            LintRule.AGENT_OUTPUT_NOT_JSON_SCHEMA,
+            output_section_line,
+            "Output",
+            json_blocks,
+        )
+    )
     return warnings
 
 
@@ -948,33 +1041,10 @@ def lint_agent(agent_file: Path) -> list[LintWarning]:
             )
         )
 
-    # OL405: Input uses free-form bullets because the orchestrator may pass input
-    # in varying formats — agents should be resilient to non-JSON input.
+    # OL405: Input must use JSON Schema (like Output) with a reference-only note,
+    # since the orchestrator may pass input in varying formats.
     if input_text is not None:
-        input_start = next(
-            (
-                i
-                for i, line in enumerate(lines, 1)
-                if re.match(r"^##\s+Input\s*$", line)
-            ),
-            0,
-        )
-        for offset, line in enumerate(input_text.split("\n")):
-            stripped = line.strip()
-            if not stripped or not re.match(r"^[-*]\s+", stripped):
-                continue
-            if re.match(r"^[-*]\s+If\s+\*\*", stripped):
-                continue
-            if not re.match(r"^[-*]\s+\*\*\w+\*\*:\s+\S", stripped):
-                warnings.append(
-                    LintWarning(
-                        LintRule.AGENT_PARAM_FORMAT,
-                        filename,
-                        input_start + offset,
-                        f"Parameter in Input must use '- **snake_case_key**: description'. "
-                        f"Found: {stripped}",
-                    )
-                )
+        warnings.extend(_lint_input_json_schema(filename, input_text, lines))
 
     # OL406: Output uses JSON Schema because agents control their own output and
     # a standardized structure makes downstream parsing reliable.

@@ -9,16 +9,22 @@ Read `.claude/inner-yoink-loop.local.md` for your runtime input variables. Your 
 
 ## Input
 
-Read from `.claude/inner-yoink-loop.local.md` (markdown body, after YAML frontmatter):
+Read from `.claude/inner-yoink-loop.local.md` (JSON code block after YAML frontmatter):
 
-- **top_package**: The top-level package being decomposed
-- **sub_package**: The sub-package to build a replacement for
-- **category**: API wrapper | orchestration layer | utility | framework
-- **strategy**: What to replace it with and how
-- **functions_to_replace**: Specific functions/classes used by yoink_{top_package}/
-- **reference_material**: API docs URL or library source path
-- **acceptable_sub_dependencies**: What lower-level deps are OK to introduce
-- **max_iterations**: Maximum loop iterations before auto-stop
+> **Note:** This schema is for reference only — input may arrive in varying formats.
+
+```json
+{
+  "top_package": { "type": "string", "description": "The top-level package being decomposed" },
+  "sub_package": { "type": "string", "description": "The sub-package to build a replacement for" },
+  "category": { "type": "string", "enum": ["API wrapper", "orchestration layer", "utility", "framework"], "description": "Classification of the library" },
+  "strategy": { "type": "string", "description": "What to replace it with and how" },
+  "functions_to_replace": { "type": "array", "items": { "type": "string" }, "description": "Specific functions/classes used by yoink_{top_package}/" },
+  "reference_material": { "type": "string", "description": "API docs URL or library source path" },
+  "acceptable_sub_dependencies": { "type": "array", "items": { "type": "string" }, "description": "What lower-level deps are OK to introduce" },
+  "max_iterations": { "type": "integer", "description": "Maximum loop iterations before auto-stop" }
+}
+```
 
 ## Rules
 

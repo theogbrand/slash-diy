@@ -11,8 +11,14 @@ Evaluate a single dependency: **keep** or **decompose one layer down**.
 
 ## Input
 
-- **library_name**: The dependency to evaluate
-- **package_name**: The yoink package that uses it (e.g., `yoink_litellm`)
+> **Note:** This schema is for reference only — input may arrive in varying formats.
+
+```json
+{
+  "library_name": { "type": "string", "description": "The dependency to evaluate" },
+  "package_name": { "type": "string", "description": "The yoink package that uses it (e.g., yoink_litellm)" }
+}
+```
 
 ## Steps
 

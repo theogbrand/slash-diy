@@ -2,8 +2,8 @@
 
 # Yoink Loop Activation Script
 # Seeds .claude/inner-yoink-loop.local.md with YAML frontmatter and a
-# state body table containing placeholder values. The decompose skill
-# (step 4: Generate State Body) fills in the placeholders afterward.
+# JSON input block. The decompose skill (step 4: Generate State Body)
+# fills in the placeholder values afterward.
 
 set -euo pipefail
 
@@ -24,9 +24,10 @@ OPTIONS:
   -h, --help                     Show this help message
 
 DESCRIPTION:
-  Seeds a Yoink loop state file with YAML frontmatter and placeholder
-  values. The decompose skill's "Generate State Body" step fills in
-  the actual values from .claude/decomp_context.md afterward.
+  Seeds a Yoink loop state file with YAML frontmatter and a JSON input
+  block with placeholder values. The decompose skill's "Generate State
+  Body" step fills in the actual values from .claude/decomp_context.md
+  afterward.
 
   The stop hook prevents exit and feeds your output back as input
   until completion or iteration limit.
@@ -71,7 +72,7 @@ if [[ "$ITER_LIMIT" -eq 0 ]]; then
   ITER_LIMIT=30
 fi
 
-# Create state file with frontmatter and placeholder table
+# Create state file with frontmatter and placeholder JSON input
 mkdir -p .claude
 
 cat > .claude/inner-yoink-loop.local.md <<EOF
@@ -83,16 +84,18 @@ completion_promise: "DONE"
 started_at: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 ---
 
-| Field | Value |
-|---|---|
-| top_package | PLACEHOLDER |
-| sub_package | PLACEHOLDER |
-| category | PLACEHOLDER |
-| strategy | PLACEHOLDER |
-| functions_to_replace | PLACEHOLDER |
-| reference_material | PLACEHOLDER |
-| acceptable_sub_dependencies | PLACEHOLDER |
-| max_iterations | $ITER_LIMIT |
+\`\`\`json
+{
+  "top_package": "PLACEHOLDER",
+  "sub_package": "PLACEHOLDER",
+  "category": "PLACEHOLDER",
+  "strategy": "PLACEHOLDER",
+  "functions_to_replace": "PLACEHOLDER",
+  "reference_material": "PLACEHOLDER",
+  "acceptable_sub_dependencies": "PLACEHOLDER",
+  "max_iterations": $ITER_LIMIT
+}
+\`\`\`
 EOF
 
 echo "🔄 State file seeded: .claude/inner-yoink-loop.local.md"

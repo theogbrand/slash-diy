@@ -93,7 +93,7 @@ Seed the state file with placeholder values:
 
 #### e. Populate loop state
 
-Read `.claude/decomp_context.md` and fill in the `PLACEHOLDER` values in `.claude/inner-yoink-loop.local.md`:
+Read `.claude/decomp_context.md` and fill in the `PLACEHOLDER` values in the JSON block inside `.claude/inner-yoink-loop.local.md`:
 
 | Field | Where to get the value |
 |---|---|
@@ -101,9 +101,9 @@ Read `.claude/decomp_context.md` and fill in the `PLACEHOLDER` values in `.claud
 | sub_package | `{sub_package}` |
 | category | from `decomp_context.md` |
 | strategy | from `decomp_context.md` |
-| functions_to_replace | comma-separated list from `decomp_context.md` |
+| functions_to_replace | JSON array of strings from `decomp_context.md` |
 | reference_material | from `decomp_context.md`, default: `.yoink/reference/{sub_package}/` |
-| acceptable_sub_dependencies | comma-separated list from `decomp_context.md` |
+| acceptable_sub_dependencies | JSON array of strings from `decomp_context.md` |
 
 ### 4. Implement & Validate
 

@@ -1,3 +1,7 @@
+---
+last_updated: 2026-04-04
+---
+
 # Architecture
 
 ## Overview
@@ -65,7 +69,7 @@ scripts/
 │   ├── decomp-queue.json           # Pending dependencies to evaluate
 │   ├── decomp_context.md           # Evaluator decision output
 │   ├── decomp-implementer-loop/    # Per-sub-package iteration logs and score history
-│   └── inner-yoink-loop.local.md   # Ralph loop state (YAML frontmatter + markdown table)
+│   └── inner-yoink-loop.local.md   # Ralph loop state (YAML frontmatter + JSON input block)
 └── pyproject.toml                  # Generated project config
 ```
 
@@ -167,7 +171,7 @@ Dependencies are tracked in `.claude/decomp-queue.json` as a FIFO queue. Each de
 
 ### Ralph Loop
 
-The inner implementation loop uses a stop hook (`stop-hook.sh`) to intercept session exit attempts. When the hook detects an active loop, it feeds the last assistant message back as input, effectively creating an iterative plan-implement-validate cycle. Loop state is tracked in `.claude/inner-yoink-loop.local.md` with YAML frontmatter (`iteration`, `max_iterations`, `completion_promise`). The implementer signals completion by emitting `<promise>DONE</promise>` or `<promise>MAX_ITERATIONS_REACHED</promise>`, and the outer decomposition skill treats any exit without `DONE` as a reason to relaunch the implementer and continue.
+The inner implementation loop uses a stop hook (`stop-hook.sh`) to intercept session exit attempts. When the hook detects an active loop, it feeds the last assistant message back as input, effectively creating an iterative plan-implement-validate cycle. Loop state is tracked in `.claude/inner-yoink-loop.local.md` with YAML frontmatter (`iteration`, `max_iterations`, `completion_promise`) and a JSON input block containing the agent's runtime variables. The implementer signals completion by emitting `<promise>DONE</promise>` or `<promise>MAX_ITERATIONS_REACHED</promise>`, and the outer decomposition skill treats any exit without `DONE` as a reason to relaunch the implementer and continue.
 
 ### Import Rewriting
 
